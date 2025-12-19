@@ -1125,14 +1125,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                 if (isFloatingChatEnabled) {
                     isFloatingChatEnabled = false
                     floatingChatRoot.gone()
-                    if (chatFragment != null) {
-                        childFragmentManager.beginTransaction().remove(chatFragment!!).commitNow()
-                    }
-                    val fragment = createChatFragment(false)
-                    if (fragment != null) {
-                        childFragmentManager.beginTransaction().replace(R.id.chatFragmentContainer, fragment).commitNow()
-                        chatFragment = fragment
-                    }
+                    // Reparent chat view back to sidebar (don't recreate fragment)
+                    reparentChatView(toFloating = false)
                 }
                 requireActivity().window.decorView.setOnSystemUiVisibilityChangeListener(null)
                 showStatusBar()
@@ -2706,15 +2700,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             // Floating -> Hide chat completely
             isFloatingChatEnabled = false
             binding.floatingChatRoot.gone()
-            // Move chat fragment back to sidebar container for next time
-            if (chatFragment != null) {
-                childFragmentManager.beginTransaction().remove(chatFragment!!).commitNow()
-                val fragment = createChatFragment(false)
-                if (fragment != null) {
-                    childFragmentManager.beginTransaction().replace(R.id.chatFragmentContainer, fragment).commitNow()
-                    chatFragment = fragment
-                }
-            }
+            // Move chat view back to sidebar container (reparent, don't recreate)
+            reparentChatView(toFloating = false)
             isChatOpen = false
             hideChatLayout()
             prefs.edit { putBoolean(C.KEY_CHAT_OPENED, false) }
@@ -2726,17 +2713,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
 
         isFloatingChatEnabled = !isFloatingChatEnabled
 
-        if (chatFragment != null) {
-            childFragmentManager.beginTransaction().remove(chatFragment!!).commitNow()
-        }
-
-        val containerId = if (isFloatingChatEnabled) R.id.floating_chat_container else R.id.chatFragmentContainer
-
-        val fragment = createChatFragment(isFloatingChatEnabled)
-        if (fragment != null) {
-            childFragmentManager.beginTransaction().replace(containerId, fragment).commitNow()
-            chatFragment = fragment
-        }
+        // Reparent the chat view instead of recreating the fragment
+        reparentChatView(toFloating = isFloatingChatEnabled)
 
         if (isFloatingChatEnabled) {
             // Hide sidebar chat and reset player margin
@@ -2764,6 +2742,27 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             showChatLayout()
         }
         updateChatButtonIcon()
+    }
+
+    /**
+     * Reparent the chat fragment's view between sidebar and floating containers.
+     * This preserves the chat connection and message history (no reconnection).
+     */
+    private fun reparentChatView(toFloating: Boolean) {
+        val chatView = chatFragment?.view ?: return
+        val currentParent = chatView.parent as? ViewGroup ?: return
+        
+        val targetContainer = if (toFloating) {
+            binding.floatingChatContainer
+        } else {
+            binding.chatFragmentContainer
+        }
+        
+        // Only reparent if not already in target container
+        if (currentParent != targetContainer) {
+            currentParent.removeView(chatView)
+            targetContainer.addView(chatView)
+        }
     }
 
     private fun saveFloatingChatPosition() {
@@ -2826,6 +2825,11 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
         val current = prefs.getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, false)
         prefs.edit { putBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, !current) }
 
+        // NOTE: High visibility mode requires fragment recreation because it affects
+        // the chat adapter's rendering. This is an intentional trade-off - the user
+        // explicitly toggled this setting, so a brief reconnection is acceptable.
+        // For normal floating chat toggle (sidebar <-> floating), we use view reparenting
+        // to preserve the chat connection.
         if (isFloatingChatEnabled && chatFragment != null) {
             childFragmentManager.beginTransaction().remove(chatFragment!!).commitNow()
             val fragment = createChatFragment(true)
