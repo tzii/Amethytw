@@ -10,8 +10,14 @@ Xtra is a feature-rich, open-source Twitch player and browser for Android, desig
 *   **Opacity Control**: Adjust transparency to balance visibility between the stream and the chat.
 *   **High Contrast Mode**: Toggle for better readability over bright video content.
 
+### ⏱️ Screen Time & Stats
+*   **Daily Tracking**: Monitor your daily viewing time directly within the app.
+*   **Top Channels**: See a leaderboard of your most-watched channels and streamers.
+*   **Privacy First**: All stats are stored locally on your device and are never shared.
+
 ### 📉 Network-Aware Data Saver
 *   **Smart Quality Control**: Automatically detects when you are on a metered connection (Mobile Data) and caps the video quality to 480p to save your data plan.
+*   **Helpful Tooltip**: A non-intrusive tooltip notifies you when Data Saver is active, with a "Don't show again" option.
 *   **User Override**: If you manually select a higher quality while on data, the app respects your choice for the rest of the session.
 *   **Settings Toggle**: Enable or disable this behavior via Player Settings > "Data saver".
 
