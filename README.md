@@ -1,26 +1,28 @@
-# Xtra
+# Xtra - Enhanced Twitch Client
 
-Xtra is a Twitch player and browser for Android.
+Xtra is a feature-rich, open-source Twitch player and browser for Android, designed for a superior viewing experience.
 
-## New Features (v2.0)
+## Key Features
 
-### 1. Network-Aware Data Saver
+### 💬 Floating Chat (New!)
+*   **Overlay Mode**: Keep up with the chat while watching in full-screen.
+*   **Customizable**: Resize and move the chat window anywhere on the screen.
+*   **Opacity Control**: Adjust transparency to balance visibility between the stream and the chat.
+*   **High Contrast Mode**: Toggle for better readability over bright video content.
+
+### 📉 Network-Aware Data Saver
 *   **Smart Quality Control**: Automatically detects when you are on a metered connection (Mobile Data) and caps the video quality to 480p to save your data plan.
 *   **User Override**: If you manually select a higher quality while on data, the app respects your choice for the rest of the session.
-*   **Settings Toggle**: Configurable via Player Settings > "Data saver".
+*   **Settings Toggle**: Enable or disable this behavior via Player Settings > "Data saver".
 
-### 2. Stream Title Tooltip
-*   **Full Visibility**: Long stream titles that are truncated by the UI can now be viewed in full by simply tapping the title text in the player controls.
-
-### 3. Gesture Controls
-*   **Intuitive Control**: Easily adjust volume and brightness without leaving the immersive full-screen player.
+### 👆 Gesture Controls
+*   **Intuitive Control**: Easily adjust settings without blocking the view.
 *   **Volume**: Slide up/down on the **right** half of the screen.
 *   **Brightness**: Slide up/down on the **left** half of the screen.
-*   **Visual Feedback**: Displays a real-time slider overlay during adjustment.
+*   **Visual Feedback**: Real-time slider overlay during adjustment.
 
-## Fixes
-*   Fixed missing string resources causing build failures.
-*   Fixed  logic to correctly identify mobile networks.
+### ℹ️ Stream Title Tooltip
+*   **Full Context**: Long stream titles that are usually truncated are now fully accessible. Simply tap the title text in the player controls to see the full description.
 
 ## Architecture
 *   **MVVM**: Clean separation of concerns with ViewModels handling UI logic.
@@ -28,6 +30,5 @@ Xtra is a Twitch player and browser for Android.
 *   **Kotlin Coroutines**: Efficient background processing.
 
 ## Building
-1.  Ensure you have Android SDK configured in `local.properties`.
+1.  Ensure you have the Android SDK configured in `local.properties`.
 2.  Run `./gradlew assembleDebug`.
-
