@@ -308,7 +308,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                         val height = resources.displayMetrics.heightPixels
                         
                         if (!isVolume && !isBrightness) {
-                             if (Math.abs(distanceY) > Math.abs(distanceX)) {
+                             if (Math.abs(distanceX) > Math.abs(distanceY)) {
                                  if (e1.x < width / 2) {
                                      isBrightness = true
                                      startBrightness = requireActivity().window.attributes.screenBrightness
@@ -321,7 +321,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                              }
                         }
 
-                        val percent = (e1.y - e2.y) / height
+                        val percent = (e2.x - e1.x) / width
                         val feedback = binding.playerLayout.findViewById<View>(R.id.gestureFeedback)
                         val icon = feedback.findViewById<ImageView>(R.id.volumeMute)
                         val slider = feedback.findViewById<Slider>(R.id.volumeBar)
@@ -333,6 +333,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                             lp.screenBrightness = newBrightness
                             requireActivity().window.attributes = lp
                             
+                            icon.setImageResource(R.drawable.ic_brightness_medium_black_24dp)
                             feedback.visible()
                             feedback.removeCallbacks(hideGestureRunnable)
                             feedback.postDelayed(hideGestureRunnable, 1000)
@@ -348,6 +349,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                             val newVolume = (startVolume + (percent * maxVolume)).toInt().coerceIn(0, maxVolume)
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
                             
+                            icon.setImageResource(R.drawable.baseline_volume_up_black_24)
                             feedback.visible()
                             feedback.removeCallbacks(hideGestureRunnable)
                             feedback.postDelayed(hideGestureRunnable, 1000)
