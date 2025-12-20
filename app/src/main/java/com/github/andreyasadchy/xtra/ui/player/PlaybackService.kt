@@ -38,6 +38,14 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import com.github.andreyasadchy.xtra.ui.stats.StatsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.github.andreyasadchy.xtra.model.VideoPosition
 import com.github.andreyasadchy.xtra.player.lowlatency.CronetDataSource
 import com.github.andreyasadchy.xtra.player.lowlatency.HlsPlaylistParser
@@ -94,6 +102,13 @@ class PlaybackService : MediaSessionService() {
     @Inject
     lateinit var offlineRepository: OfflineRepository
 
+    @Inject
+    lateinit var statsRepository: StatsRepository
+
+    private val statsScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var currentChannelName: String? = null
+    private var lastStatsTime: Long = 0L
+
     private var mediaSession: MediaSession? = null
     private var dynamicsProcessing: DynamicsProcessing? = null
     private var background = false
@@ -127,16 +142,20 @@ class PlaybackService : MediaSessionService() {
             object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
+                        lastStatsTime = System.currentTimeMillis()
                         if (savePositionTimer == null && (videoId != null || offlineVideoId != null)) {
                             savePositionTimer = Timer().apply {
                                 scheduleAtFixedRate(30000, 30000) {
                                     Handler(Looper.getMainLooper()).post {
                                         updateSavedPosition()
+                                        updateStats()
                                     }
                                 }
                             }
                         }
                     } else {
+                        updateStats()
+                        lastStatsTime = 0L
                         savePositionTimer?.cancel()
                         savePositionTimer = null
                         updateSavedPosition()
@@ -231,6 +250,8 @@ class PlaybackService : MediaSessionService() {
                                 val title = customCommand.customExtras.getString(TITLE)
                                 val channelName = customCommand.customExtras.getString(CHANNEL_NAME)
                                 val channelLogo = customCommand.customExtras.getString(CHANNEL_LOGO)
+                                currentChannelName = channelName
+                                lastStatsTime = if (session.player.isPlaying) System.currentTimeMillis() else 0L
                                 videoId = null
                                 offlineVideoId = null
                                 proxyMediaPlaylist = false
@@ -351,6 +372,8 @@ class PlaybackService : MediaSessionService() {
                                 val title = customCommand.customExtras.getString(TITLE)
                                 val channelName = customCommand.customExtras.getString(CHANNEL_NAME)
                                 val channelLogo = customCommand.customExtras.getString(CHANNEL_LOGO)
+                                currentChannelName = channelName
+                                lastStatsTime = if (session.player.isPlaying) System.currentTimeMillis() else 0L
                                 val newId = customCommand.customExtras.getLong(VIDEO_ID).takeIf { it != 0L }
                                 val position = if (videoId == newId && session.player.currentMediaItem != null) {
                                     session.player.currentPosition
@@ -403,6 +426,8 @@ class PlaybackService : MediaSessionService() {
                                 val title = customCommand.customExtras.getString(TITLE)
                                 val channelName = customCommand.customExtras.getString(CHANNEL_NAME)
                                 val channelLogo = customCommand.customExtras.getString(CHANNEL_LOGO)
+                                currentChannelName = channelName
+                                lastStatsTime = if (session.player.isPlaying) System.currentTimeMillis() else 0L
                                 videoId = null
                                 offlineVideoId = null
                                 val networkLibrary = prefs().getString(C.NETWORK_LIBRARY, "OkHttp")
@@ -446,6 +471,8 @@ class PlaybackService : MediaSessionService() {
                                 val title = customCommand.customExtras.getString(TITLE)
                                 val channelName = customCommand.customExtras.getString(CHANNEL_NAME)
                                 val channelLogo = customCommand.customExtras.getString(CHANNEL_LOGO)
+                                currentChannelName = channelName
+                                lastStatsTime = if (session.player.isPlaying) System.currentTimeMillis() else 0L
                                 val newId = customCommand.customExtras.getInt(VIDEO_ID).takeIf { it != 0 }
                                 val position = if (offlineVideoId == newId && session.player.currentMediaItem != null) {
                                     session.player.currentPosition
@@ -606,6 +633,23 @@ class PlaybackService : MediaSessionService() {
                 enabled = true
             }
         }
+    }
+
+    private fun updateStats() {
+        val now = System.currentTimeMillis()
+        if (lastStatsTime > 0) {
+            val diff = (now - lastStatsTime) / 1000
+            if (diff > 0) {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                statsScope.launch {
+                    statsRepository.updateScreenTime(date, diff)
+                    currentChannelName?.let {
+                        statsRepository.updateStreamWatchStats(it, it, diff)
+                    }
+                }
+            }
+        }
+        lastStatsTime = now
     }
 
     private fun savePosition() {

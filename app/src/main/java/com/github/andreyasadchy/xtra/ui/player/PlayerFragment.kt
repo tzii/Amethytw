@@ -315,7 +315,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                                      if (startBrightness < 0) startBrightness = 0.5f // Default fallback
                                  } else {
                                      isVolume = true
-                                     val audioManager = requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                     val audioManager = requireContext().getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
                                      startVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                                  }
                              }
@@ -343,7 +343,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                         }
                         
                         if (isVolume) {
-                            val audioManager = requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            val audioManager = requireContext().getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                             val newVolume = (startVolume + (percent * maxVolume)).toInt().coerceIn(0, maxVolume)
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)

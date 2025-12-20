@@ -31,6 +31,8 @@ import com.github.andreyasadchy.xtra.repository.SortChannelRepository
 import com.github.andreyasadchy.xtra.repository.SortGameRepository
 import com.github.andreyasadchy.xtra.repository.TranslateAllMessagesUsersRepository
 import com.github.andreyasadchy.xtra.repository.VodBookmarkIgnoredUsersRepository
+import com.github.andreyasadchy.xtra.db.ScreenTimeDao
+import com.github.andreyasadchy.xtra.db.StreamWatchStatsDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -144,6 +146,14 @@ class DatabaseModule {
     @Singleton
     @Provides
     fun providesRecentSearchDao(database: AppDatabase): RecentSearchDao = database.recentSearchDao()
+
+    @Singleton
+    @Provides
+    fun providesScreenTimeDao(database: AppDatabase): ScreenTimeDao = database.screenTimeDao()
+
+    @Singleton
+    @Provides
+    fun providesStreamWatchStatsDao(database: AppDatabase): StreamWatchStatsDao = database.streamWatchStatsDao()
 
     @Singleton
     @Provides
@@ -339,6 +349,12 @@ class DatabaseModule {
                 object : Migration(32, 33) {
                     override fun migrate(db: SupportSQLiteDatabase) {
                         db.execSQL("CREATE TABLE IF NOT EXISTS recent_search (id INTEGER NOT NULL, query TEXT NOT NULL, type TEXT NOT NULL, lastSearched INTEGER NOT NULL, PRIMARY KEY (id))")
+                    }
+                },
+                object : Migration(33, 34) {
+                    override fun migrate(db: SupportSQLiteDatabase) {
+                        db.execSQL("CREATE TABLE IF NOT EXISTS screen_time (date TEXT NOT NULL, totalSeconds INTEGER NOT NULL, PRIMARY KEY (date))")
+                        db.execSQL("CREATE TABLE IF NOT EXISTS stream_watch_stats (channelId TEXT NOT NULL, channelName TEXT NOT NULL, totalSecondsWatched INTEGER NOT NULL, lastWatchedTimestamp INTEGER NOT NULL, PRIMARY KEY (channelId))")
                     }
                 },
             )
