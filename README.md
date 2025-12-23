@@ -1,6 +1,5 @@
-# Xtra - Enhanced Twitch Client
+# Amethytw - Xtra fork with some extra features.
 
-Xtra is a feature-rich, open-source Twitch player and browser for Android, designed for a superior viewing experience.
 
 ## Key Features
 
