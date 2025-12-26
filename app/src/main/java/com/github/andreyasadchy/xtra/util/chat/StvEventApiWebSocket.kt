@@ -33,7 +33,7 @@ class StvEventApiWebSocket(
             url = "wss://events.7tv.io/v3",
             trustManager = trustManager,
             listener = STVEventApiWebSocketListener(),
-            headers = mapOf("User-Agent" to "Xtra/" + BuildConfig.VERSION_NAME),
+            headers = mapOf("User-Agent" to "Amethytw/" + BuildConfig.VERSION_NAME),
         )
         coroutineScope.launch {
             webSocket?.start()

@@ -30,7 +30,7 @@ class StvEventApiWebSocketOkHttp(
         socket = client.newWebSocket(
             Request.Builder().apply {
                 url("wss://events.7tv.io/v3")
-                header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
             }.build(),
             STVEventApiWebSocketListener()
         )
@@ -337,3 +337,4 @@ class StvEventApiWebSocketOkHttp(
         private const val OPCODE_SUBSCRIBE = 35
     }
 }
+

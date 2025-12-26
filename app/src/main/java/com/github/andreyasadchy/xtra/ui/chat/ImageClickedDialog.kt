@@ -106,7 +106,7 @@ class ImageClickedDialog : BottomSheetDialogFragment(), IntegrityDialog.Callback
                         data(args.getString(IMAGE_URL))
                         if (args.getBoolean(IMAGE_THIRD_PARTY)) {
                             httpHeaders(NetworkHeaders.Builder().apply {
-                                add("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                                add("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                             }.build())
                         }
                         target(

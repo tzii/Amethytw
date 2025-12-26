@@ -16,7 +16,7 @@ import java.io.InputStream
 
 
 @GlideModule
-class XtraGlideModule : AppGlideModule() {
+class AmethytwGlideModule : AppGlideModule() {
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)

@@ -519,7 +519,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://recent-messages.robotty.de/api/v2/recent-messages/${channelLogin}?limit=${limit}", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<RecentMessagesResponse>(String(response.second))
@@ -528,14 +528,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://recent-messages.robotty.de/api/v2/recent-messages/${channelLogin}?limit=${limit}", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<RecentMessagesResponse>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://recent-messages.robotty.de/api/v2/recent-messages/${channelLogin}?limit=${limit}", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<RecentMessagesResponse>(String(response.second))
@@ -544,7 +544,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://recent-messages.robotty.de/api/v2/recent-messages/${channelLogin}?limit=${limit}")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<RecentMessagesResponse>(response.body.string())
                 }
@@ -557,7 +557,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://7tv.io/v3/emote-sets/global", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<StvGlobalResponse>(String(response.second))
@@ -566,14 +566,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/emote-sets/global", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<StvGlobalResponse>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/emote-sets/global", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<StvGlobalResponse>(String(response.second))
@@ -582,7 +582,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://7tv.io/v3/emote-sets/global")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<StvGlobalResponse>(response.body.string())
                 }
@@ -596,7 +596,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${channelId}", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<StvChannelResponse>(String(response.second))
@@ -605,14 +605,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${channelId}", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<StvChannelResponse>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${channelId}", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<StvChannelResponse>(String(response.second))
@@ -621,7 +621,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://7tv.io/v3/users/twitch/${channelId}")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<StvChannelResponse>(response.body.string())
                 }
@@ -671,7 +671,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${userId}", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 String(response.second)
@@ -680,13 +680,13 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${userId}", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     request.future.get().responseBody as String
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/twitch/${userId}", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     String(response.second)
@@ -695,7 +695,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://7tv.io/v3/users/twitch/${userId}")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     response.body.string()
                 }
@@ -719,7 +719,7 @@ class PlayerRepository @Inject constructor(
                 suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/${stvUserId}/presences", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
                         addHeader("Content-Type", "application/json")
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         setUploadDataProvider(HttpEngineUtils.byteArrayUploadProvider(body.toByteArray()), cronetExecutor)
                     }.build().start()
                 }
@@ -729,7 +729,7 @@ class PlayerRepository @Inject constructor(
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/${stvUserId}/presences", request.callback, cronetExecutor).apply {
                         addHeader("Content-Type", "application/json")
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         setUploadDataProvider(UploadDataProviders.create(body.toByteArray()), cronetExecutor)
                     }.build().start()
                     request.future.get().responseBody as String
@@ -737,7 +737,7 @@ class PlayerRepository @Inject constructor(
                     suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://7tv.io/v3/users/${stvUserId}/presences", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
                             addHeader("Content-Type", "application/json")
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                             setUploadDataProvider(UploadDataProviders.create(body.toByteArray()), cronetExecutor)
                         }.build().start()
                     }
@@ -747,7 +747,7 @@ class PlayerRepository @Inject constructor(
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://7tv.io/v3/users/${stvUserId}/presences")
                     header("Content-Type", "application/json")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     post(body.toRequestBody())
                 }.build()).execute()
             }
@@ -759,7 +759,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/emotes/global", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<List<BttvResponse>>(String(response.second))
@@ -768,14 +768,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/emotes/global", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<List<BttvResponse>>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/emotes/global", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<List<BttvResponse>>(String(response.second))
@@ -784,7 +784,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://api.betterttv.net/3/cached/emotes/global")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<List<BttvResponse>>(response.body.string())
                 }
@@ -798,7 +798,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/users/twitch/${channelId}", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<Map<String, JsonElement>>(String(response.second))
@@ -807,14 +807,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/users/twitch/${channelId}", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<Map<String, JsonElement>>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://api.betterttv.net/3/cached/users/twitch/${channelId}", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<Map<String, JsonElement>>(String(response.second))
@@ -823,7 +823,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://api.betterttv.net/3/cached/users/twitch/${channelId}")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<Map<String, JsonElement>>(response.body.string())
                 }
@@ -863,7 +863,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/set/global", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<FfzGlobalResponse>(String(response.second))
@@ -872,14 +872,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/set/global", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<FfzGlobalResponse>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/set/global", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<FfzGlobalResponse>(String(response.second))
@@ -888,7 +888,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://api.frankerfacez.com/v1/set/global")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<FfzGlobalResponse>(response.body.string())
                 }
@@ -904,7 +904,7 @@ class PlayerRepository @Inject constructor(
             networkLibrary == "HttpEngine" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7 && httpEngine != null -> {
                 val response = suspendCoroutine<Pair<UrlResponseInfo, ByteArray>> { continuation ->
                     httpEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/room/id/${channelId}", cronetExecutor, HttpEngineUtils.byteArrayUrlCallback(continuation)).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                 }
                 json.decodeFromString<FfzChannelResponse>(String(response.second))
@@ -913,14 +913,14 @@ class PlayerRepository @Inject constructor(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val request = UrlRequestCallbacks.forStringBody(RedirectHandlers.alwaysFollow())
                     cronetEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/room/id/${channelId}", request.callback, cronetExecutor).apply {
-                        addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                        addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                     }.build().start()
                     val response = request.future.get().responseBody as String
                     json.decodeFromString<FfzChannelResponse>(response)
                 } else {
                     val response = suspendCoroutine<Pair<org.chromium.net.UrlResponseInfo, ByteArray>> { continuation ->
                         cronetEngine.get().newUrlRequestBuilder("https://api.frankerfacez.com/v1/room/id/${channelId}", getByteArrayCronetCallback(continuation), cronetExecutor).apply {
-                            addHeader("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                            addHeader("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                         }.build().start()
                     }
                     json.decodeFromString<FfzChannelResponse>(String(response.second))
@@ -929,7 +929,7 @@ class PlayerRepository @Inject constructor(
             else -> {
                 okHttpClient.newCall(Request.Builder().apply {
                     url("https://api.frankerfacez.com/v1/room/id/${channelId}")
-                    header("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                    header("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                 }.build()).execute().use { response ->
                     json.decodeFromString<FfzChannelResponse>(response.body.string())
                 }

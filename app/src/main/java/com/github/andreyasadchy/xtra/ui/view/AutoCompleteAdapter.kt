@@ -60,7 +60,7 @@ class AutoCompleteAdapter<T>(
                                 )
                                 if (item.thirdParty) {
                                     httpHeaders(NetworkHeaders.Builder().apply {
-                                        add("User-Agent", "Xtra/" + BuildConfig.VERSION_NAME)
+                                        add("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
                                     }.build())
                                 }
                                 crossfade(true)

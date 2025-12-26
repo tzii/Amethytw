@@ -40,7 +40,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 @HiltAndroidApp
-class XtraApp : Application(), Configuration.Provider, SingletonImageLoader.Factory {
+class AmethytwApp : Application(), Configuration.Provider, SingletonImageLoader.Factory {
 
     companion object {
         lateinit var INSTANCE: Application
