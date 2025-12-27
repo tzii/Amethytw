@@ -2932,7 +2932,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     }
 
     private fun toggleHighVisibility() {
-        val current = prefs.getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, false)
+        val current = prefs.getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, true)
         prefs.edit { putBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, !current) }
 
         // NOTE: High visibility mode requires fragment recreation because it affects
