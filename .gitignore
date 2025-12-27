@@ -72,3 +72,10 @@ build_log_4.txt
 build_log_3.txt
 build_log.txt
 .gitignore
+ 
+ # Factory AI configuration (local development only)
+ .factory/
+ AGENTS.md
+ 
+ # Temporary/accidental files
+ nul
