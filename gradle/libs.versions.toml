@@ -33,6 +33,7 @@ swiperefreshlayout = "1.2.0"
 viewpager2 = "1.1.0"
 webkit = "1.14.0"
 work = "2.11.0"
+ detekt = "1.23.7"
 
 [libraries]
 activity = { module = "androidx.activity:activity", version.ref = "activity" }
@@ -82,6 +83,7 @@ webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 work-runtime = { module = "androidx.work:work-runtime", version.ref = "work" }
 
 [plugins]
+ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 apollo = { id = "com.apollographql.apollo", version.ref = "apollo" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

@@ -2,12 +2,12 @@ name: CI Build
 
 on:
   push:
-    branches: [ "feature/data-saver-tooltip" ]
+     branches: [ "feature/pending-improvements", "master" ]
   pull_request:
     branches: [ "master", "main" ]
 
 jobs:
-  build-debug:
+   lint:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
@@ -21,14 +21,71 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+     - name: Download Detekt CLI
+       run: |
+         curl -sSLO https://github.com/detekt/detekt/releases/download/v1.23.7/detekt-cli-1.23.7.zip
+         unzip detekt-cli-1.23.7.zip
     
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+     - name: Run Detekt
+       run: ./detekt-cli-1.23.7/bin/detekt-cli --config detekt.yml --input app/src/main/java --report html:detekt-report.html --report xml:detekt-report.xml || true
     
-    - name: Upload Debug APK
+     - name: Upload Detekt Report
       uses: actions/upload-artifact@v4
+       if: always()
       with:
-        name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
+         name: detekt-report
+         path: detekt-report.*
+ 
+   test:
+     runs-on: ubuntu-latest
+     steps:
+     - name: Checkout sources
+       uses: actions/checkout@v4
+       with:
+         fetch-depth: 0
+     
+     - name: Setup Java
+       uses: actions/setup-java@v4
+       with:
+         java-version: '21'
+         distribution: 'temurin'
+     
+     - name: Setup Gradle
+       uses: gradle/actions/setup-gradle@v3
+     
+     - name: Run Unit Tests
+       run: ./gradlew test
+     
+     - name: Upload Test Reports
+       uses: actions/upload-artifact@v4
+       if: always()
+       with:
+         name: test-reports
+         path: app/build/reports/tests/
+ 
+   build-debug:
+     runs-on: ubuntu-latest
+     needs: [lint, test]
+     steps:
+     - name: Checkout sources
+       uses: actions/checkout@v4
+       with:
+         fetch-depth: 0
+     
+     - name: Setup Java
+       uses: actions/setup-java@v4
+       with:
+         java-version: '21'
+         distribution: 'temurin'
+     
+     - name: Setup Gradle
+       uses: gradle/actions/setup-gradle@v3
+     
+     - name: Build Debug APK
+       run: ./gradlew assembleDebug
+     
+     - name: Upload Debug APK
+       uses: actions/upload-artifact@v4
+       with:
+         name: debug-apk
+         path: app/build/outputs/apk/debug/*.apk

@@ -4,6 +4,23 @@
  
  ---
  
+ ## Completed
+ 
+ ### Security Improvements (Completed)
+ 
+ - [x] **3.1 Encrypted Token Storage** - Migrated to `EncryptedSharedPreferences` (commit `5dfd004b`)
+ - [x] **3.2 Remove Debug Keystore** - Removed from repository (commit `5dfd004b`)
+ 
+ ### Code Quality (Completed)
+ 
+ - [x] **Detekt in CI** - Added CLI-based Detekt to GitHub Actions workflow (`.github/workflows/ci.yml`)
+ - [x] **LeakCanary** - Added for debug builds (`debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")`)
+ - [x] **Baseline Profiles** - Added `baseline-prof.txt` with startup optimization rules
+ - [x] **Unit Tests Expanded** - Added `EmoteCacheTest.kt` (10 tests), `PlayerGestureHelperTest.kt` (9 tests)
+ - [x] **PlayerGestureHelper** - Extracted gesture handling utilities from PlayerFragment for better testability
+ 
+ ---
+ 
  ## High Priority
  
  ### 1. ChatAdapter Message Caching
@@ -43,91 +60,27 @@
  | `ChatViewModel.kt` | ~2713 | `EmoteManager`, `BadgeManager`, `ChatConnectionManager`, `MessageParser` |
  | `GraphQLRepository.kt` | ~1681 | Split by domain: `StreamRepository`, `UserRepository`, `GameRepository`, `ClipRepository` |
  
- ---
- 
- ### 3. Security Improvements
- 
- #### 3.1 Encrypted Token Storage
- 
- **Problem**: User tokens are stored in plain SharedPreferences.
- 
- **Proposed Fix**: Migrate to `EncryptedSharedPreferences` from AndroidX Security.
- 
- ```kotlin
- val masterKey = MasterKey.Builder(context)
-     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-     .build()
- 
- val securePrefs = EncryptedSharedPreferences.create(
-     context,
-     "secure_prefs",
-     masterKey,
-     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
- )
- ```
- 
- **Files**: Token storage locations throughout the app
- 
- #### 3.2 Remove Debug Keystore
- 
- **Problem**: `debug-keystore.jks` with password "123456" is committed to the repository.
- 
- **Action**: Remove from git history or at minimum from tracked files.
- 
- ```bash
- git rm --cached debug-keystore.jks
- echo "debug-keystore.jks" >> .gitignore
- ```
+ **Progress**: `PlayerGestureHelper.kt` created as a starting point for PlayerFragment refactoring.
  
  ---
  
  ## Medium Priority
  
- ### 4. Baseline Profiles
+ ### 3. Additional Unit Tests
  
- The feature branch includes Baseline Profile infrastructure but it's not fully integrated:
+ Test coverage should be expanded:
  
- - `BaselineProfileGenerator.kt` exists but needs proper test setup
- - Should be run on CI to generate profiles for release builds
- 
- **Files**: `app/src/androidTest/java/.../BaselineProfileGenerator.kt`
- 
- ---
- 
- ### 5. Unit Tests
- 
- Test files exist but need expansion:
- 
- - `EmoteCacheTest.kt` - Basic tests for EmoteCache
- - `ChatViewModelTest.kt` - Needs more coverage
- - `GraphQLRepositoryTest.kt` - Needs implementation
+ - `ChatViewModelTest.kt` - Needs more coverage (mocking dependencies)
+ - `GraphQLRepositoryTest.kt` - Needs implementation  
+ - `PlayerViewModelTest.kt` - Needs implementation
  
  **Goal**: Achieve >60% code coverage on critical paths (chat, player, API)
  
  ---
  
- ### 6. Detekt Integration
- 
- `detekt.yml` configuration exists but Detekt is not running in CI.
- 
- **Action**: Add Detekt to GitHub Actions workflow for static analysis.
- 
- ---
- 
- ### 7. LeakCanary
- 
- LeakCanary dependency may be added for debug builds to detect memory leaks.
- 
- ```kotlin
- debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
- ```
- 
- ---
- 
  ## Low Priority
  
- ### 8. Analytics Dashboard
+ ### 4. Analytics Dashboard
  
  Feature branch includes analytics infrastructure that's not wired up:
  
@@ -137,7 +90,7 @@
  
  ---
  
- ### 9. UiState Pattern
+ ### 5. UiState Pattern
  
  Some ViewModels use UiState sealed classes but not consistently:
  
@@ -146,7 +99,7 @@
  
  ---
  
- ### 10. Remaining runBlocking Usage
+ ### 6. Remaining runBlocking Usage
  
  `StreamDownloadWorker.kt` still uses `runBlocking` in some places where it was difficult to refactor. These should be reviewed:
  
@@ -159,3 +112,5 @@
  - Build currently passes with JDK 21 toolchain
  - Coil 3 is the sole image loading library
  - EmoteCache is injected but verify all usages are correct
+ - CI workflow includes: lint (Detekt), test (unit tests), build-debug
+ - LeakCanary 2.14 automatically detects memory leaks in debug builds

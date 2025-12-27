@@ -1,5 +1,50 @@
  # ThystTV Changelog
  
+ ## Changes in `feature/pending-improvements` Branch
+ 
+ ### New Asset Images
+ 
+ Added branded images for app store listings and documentation:
+ 
+ | File | Description |
+ |------|-------------|
+ | `docs/images/appstore.png` | App Store download badge |
+ | `docs/images/playstore.png` | Google Play Store download badge |
+ | `docs/images/android/` | Android mipmap icons (hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi) |
+ | `docs/images/Assets.xcassets/` | iOS app icon assets (AppIcon.appiconset) |
+ 
+ ### Development Configuration
+ 
+ - **AGENTS.md**: Added AI agent instructions with coding guidelines, project layout, and development patterns
+ - **.factory/**: Added Factory AI configuration directory with custom droids for code review, performance analysis, refactoring, security auditing, and test writing
+ 
+ ### Code Quality & Testing
+ 
+ #### CI/CD Pipeline Enhancements
+ 
+ - **Detekt Integration**: Added CLI-based Detekt static analysis to `.github/workflows/ci.yml`
+ - **Unit Test Job**: Added dedicated test job to CI pipeline with artifact upload
+ - **Build Dependencies**: Build now requires lint and test jobs to pass first
+ 
+ #### Unit Tests Added
+ 
+ | Test File | Tests | Description |
+ |-----------|-------|-------------|
+ | `EmoteCacheTest.kt` | 10 | Tests for emote/badge cache operations, TTL validation, and clear functions |
+ | `PlayerGestureHelperTest.kt` | 9 | Tests for gesture calculations, swipe detection, and duration formatting |
+ | `StatsViewModelTest.kt` | 6 | Tests for statistics ViewModel (existing) |
+ 
+ #### New Utility Classes
+ 
+ - **PlayerGestureHelper.kt**: Extracted gesture handling utilities (volume, brightness, seek calculations) from PlayerFragment for better testability and reuse
+ 
+ #### Debug Tools
+ 
+ - **LeakCanary 2.14**: Added for automatic memory leak detection in debug builds
+ - **Baseline Profile**: Added `baseline-prof.txt` with startup optimization rules for critical paths
+ 
+ ---
+ 
  ## Changes in `feature/code-quality-improvements` Branch
  
  ### Project Renaming (Xtra → ThystTV)
