@@ -703,7 +703,7 @@ object ChatAdapterUtils {
                 ImageRequest.Builder(fragment.requireContext()).apply {
                     data(imagePaint.imageUrl)
                     httpHeaders(NetworkHeaders.Builder().apply {
-                        add("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
+                        add("User-Agent", "ThystTV/" + BuildConfig.VERSION_NAME)
                     }.build())
                     target(
                         onSuccess = {
@@ -851,7 +851,7 @@ object ChatAdapterUtils {
                 })
                 if (image.thirdParty) {
                     httpHeaders(NetworkHeaders.Builder().apply {
-                        add("User-Agent", "Amethytw/" + BuildConfig.VERSION_NAME)
+                        add("User-Agent", "ThystTV/" + BuildConfig.VERSION_NAME)
                     }.build())
                 }
                 target(

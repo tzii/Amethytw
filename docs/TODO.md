@@ -1,4 +1,4 @@
- # Amethytw - Pending Features and Fixes
+ # ThystTV - Pending Features and Fixes
  
  This document tracks improvements that were identified but not yet implemented.
  

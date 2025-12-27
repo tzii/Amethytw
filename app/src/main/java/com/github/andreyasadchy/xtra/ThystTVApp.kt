@@ -41,7 +41,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 @HiltAndroidApp
-class AmethytwApp : Application(), Configuration.Provider, SingletonImageLoader.Factory {
+class ThystTVApp : Application(), Configuration.Provider, SingletonImageLoader.Factory {
 
     companion object {
         lateinit var INSTANCE: Application

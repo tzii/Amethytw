@@ -10,7 +10,7 @@ import android.text.format.DateUtils
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.github.andreyasadchy.xtra.R
-import com.github.andreyasadchy.xtra.AmethytwApp
+import com.github.andreyasadchy.xtra.ThystTVApp
 import org.json.JSONObject
 import java.lang.Integer.parseInt
 import java.math.RoundingMode
@@ -383,7 +383,7 @@ object TwitchApiHelper {
     }
 
     fun getMessageIdString(msgId: String?): String? {
-        val appContext = AmethytwApp.INSTANCE.applicationContext
+        val appContext = ThystTVApp.INSTANCE.applicationContext
         return when (msgId) {
             "highlighted-message" -> ContextCompat.getString(appContext, R.string.irc_msgid_highlighted_message)
             "announcement" -> ContextCompat.getString(appContext, R.string.irc_msgid_announcement)

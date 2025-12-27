@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Amethytw</string>
-    <string name="notification_downloads_channel_id" translatable="false">amethytw_downloads_channel</string>
-    <string name="notification_live_channel_id" translatable="false">amethytw_live_channel</string>
-    <string name="notification_playback_channel_id" translatable="false">amethytw_playback_channel</string>
+    <string name="app_name" translatable="false">ThystTV</string>
+    <string name="notification_downloads_channel_id" translatable="false">thysttv_downloads_channel</string>
+    <string name="notification_live_channel_id" translatable="false">thysttv_live_channel</string>
+    <string name="notification_playback_channel_id" translatable="false">thysttv_playback_channel</string>
     <string name="lang_de" translatable="false">Deutsch</string>
     <string name="lang_en" translatable="false">English</string>
     <string name="lang_es" translatable="false">Español</string>

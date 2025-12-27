@@ -1,4 +1,4 @@
-# Amethytw - Xtra fork with some extra features.
+# ThystTV - Xtra fork with some extra features.
 DISCLAIMER: This fork is mostly vibe coded with some manual tests done, hopefully these features can be added to the current mainted fork, I take no responsibility for any crashes etc...
 
 <p align="center">
