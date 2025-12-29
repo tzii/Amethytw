@@ -1,10 +1,22 @@
-# ThystTV - Xtra fork with some extra features.
-DISCLAIMER: This fork is mostly vibe coded with some manual tests done, hopefully these features can be added to the current mainted fork, I take no responsibility for any crashes etc...
+# ThystTV
 
 <p align="center">
   <img src="docs/images/icon.png" width="128" height="128" />
 </p>
 
+A fork of [Xtra](https://github.com/crackededed/Xtra) with additional features focused on viewer experience, data management, and accessibility.
+
+> **Note:** This fork is experimental. Features are tested manually but may have rough edges. Contributions and bug reports welcome!
+
+## What's Different from Xtra?
+
+| Feature | Xtra | ThystTV |
+|---------|------|---------|
+| Floating Chat Overlay | No | Yes |
+| Screen Time & Watch Stats | No | Yes |
+| Network-Aware Data Saver | No | Yes |
+| Swipe Gesture Controls | No | Yes |
+| Chat Translation (ML Kit) | Yes | Yes |
 
 ## Key Features
 
@@ -35,11 +47,19 @@ DISCLAIMER: This fork is mostly vibe coded with some manual tests done, hopefull
 ### ℹ️ Stream Title Tooltip
 *   **Full Context**: Long stream titles that are usually truncated are now fully accessible. Simply tap the title text in the player controls to see the full description.
 
-## Architecture
-*   **MVVM**: Clean separation of concerns with ViewModels handling UI logic.
-*   **Media3/ExoPlayer**: Robust video playback engine.
-*   **Kotlin Coroutines**: Efficient background processing.
-
 ## Building
-1.  Ensure you have the Android SDK configured in `local.properties`.
-2.  Run `./gradlew assembleDebug`.
+
+```bash
+# Debug build
+./gradlew assembleDebug
+
+# Release build
+./gradlew assembleRelease
+
+# Run tests
+./gradlew test
+```
+
+## License
+
+ThystTV is licensed under the [GNU Affero General Public License v3.0](LICENSE), same as the upstream Xtra project.
