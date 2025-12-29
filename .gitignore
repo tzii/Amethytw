@@ -71,11 +71,21 @@ build_log_2.txt
 build_log_4.txt
 build_log_3.txt
 build_log.txt
-.gitignore
- 
- # Factory AI configuration (local development only)
- .factory/
- AGENTS.md
- 
- # Temporary/accidental files
- nul
+
+# Factory AI configuration (local development only)
+.factory/
+
+# Documentation files (not needed in repo)
+AGENTS.md
+TODO.md
+CHANGELOG.md
+
+# Temporary/accidental files
+nul
+
+# IDE and editor files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

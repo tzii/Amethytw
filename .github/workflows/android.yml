@@ -1,48 +1,76 @@
-name: Build
+name: Build Release APK
 
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Setup Java
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
+
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v5
-    - name: Build with Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Run Unit Tests
+      run: ./gradlew test
+
+    - name: Build Release APK
       run: ./gradlew assembleRelease
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v6
+    - name: Get version name
+      id: version
+      run: |
+        VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Rename APK
+      run: |
+        mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ThystTV-${{ steps.version.outputs.version }}.apk
+
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
       with:
-        name: apk
-        path: app/build/outputs/apk/release/*.apk
+        name: ThystTV-Release
+        path: app/build/outputs/apk/release/ThystTV-*.apk
 
     - name: Generate release notes
-      run: git log refs/tags/latest..HEAD --oneline --decorate=no > notes.txt
-
-    - name: Update tag
       run: |
-        git tag -f latest
-        git push -f origin tag latest
+        echo "## ThystTV ${{ steps.version.outputs.version }}" > notes.txt
+        echo "" >> notes.txt
+        echo "### Changes" >> notes.txt
+        git log $(git describe --tags --abbrev=0 2>/dev/null || echo HEAD~10)..HEAD --oneline --decorate=no >> notes.txt || echo "Initial release" >> notes.txt
 
-    - name: Delete release
+    - name: Delete existing release
       continue-on-error: true
       env:
         GH_TOKEN: ${{ github.token }}
       run: gh release delete latest -y
 
-    - name: Create release
+    - name: Update latest tag
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git tag -f latest
+        git push -f origin tag latest
+
+    - name: Create GitHub Release
       env:
         GH_TOKEN: ${{ github.token }}
-      run: gh release create latest --title "Latest" --notes-file notes.txt --latest=true 'app/build/outputs/apk/release/*.apk'
+      run: |
+        gh release create latest \
+          --title "ThystTV ${{ steps.version.outputs.version }}" \
+          --notes-file notes.txt \
+          --latest \
+          app/build/outputs/apk/release/ThystTV-*.apk
