@@ -294,21 +294,23 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                     private var isBrightness = false
                     private var startVolume = 0
                     private var startBrightness = 0f
+                    private var gestureStartY = 0f
 
                     override fun onDown(e: MotionEvent): Boolean {
                         isVolume = false
                         isBrightness = false
+                        gestureStartY = e.y
                         return true
                     }
 
                     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-                        if (e1 == null || isPortrait || !isMaximized) return false
+                        if (e1 == null || isPortrait || !isMaximized || playerControls.root.isVisible) return false
                         
                         val width = resources.displayMetrics.widthPixels
                         val height = resources.displayMetrics.heightPixels
                         
                         if (!isVolume && !isBrightness) {
-                             if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                             if (Math.abs(distanceY) > Math.abs(distanceX)) {
                                  if (e1.x < width / 2) {
                                      isBrightness = true
                                      startBrightness = requireActivity().window.attributes.screenBrightness
@@ -321,7 +323,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                              }
                         }
 
-                        val percent = (e2.x - e1.x) / width
+                        val percent = (gestureStartY - e2.y) / height
                         val feedback = binding.playerLayout.findViewById<View>(R.id.gestureFeedback)
                         val icon = feedback.findViewById<ImageView>(R.id.volumeMute)
                         val slider = feedback.findViewById<Slider>(R.id.volumeBar)
@@ -583,7 +585,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                         MotionEvent.ACTION_MOVE -> {
                             if (isMaximized) {
                                 playerControls.root.dispatchTouchEvent(event)
-                                if (!playerControls.progressBar.isPressed && !statusBarSwipe && activePointerId != -1) {
+                                if (!playerControls.progressBar.isPressed && !statusBarSwipe && activePointerId != -1 && playerControls.root.isVisible) {
                                     val pointerIndex = event.findPointerIndex(activePointerId)
                                     if (pointerIndex != -1) {
                                         val y = event.getY(pointerIndex)
