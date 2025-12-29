@@ -6,7 +6,7 @@
 
 A fork of [Xtra](https://github.com/crackededed/Xtra) with additional features focused on viewer experience, data management, and accessibility.
 
-> **Note:** This fork is experimental. Features are tested manually but may have rough edges. Contributions and bug reports welcome!
+> **Note:** This fork is experimental and mostly vibe coded. Features are tested manually but may have rough edges. Contributions and bug reports welcome!
 
 ## What's Different from Xtra?
 
@@ -14,10 +14,7 @@ A fork of [Xtra](https://github.com/crackededed/Xtra) with additional features f
 |---------|------|---------|
 | Floating Chat Overlay | No | Yes |
 | Screen Time & Watch Stats | No | Yes |
-| Network-Aware Data Saver | No | Yes |
 | Swipe Gesture Controls | No | Yes |
-| Chat Translation (ML Kit) | Yes | Yes |
-
 ## Key Features
 
 ### 💬 Floating Chat (New!)
