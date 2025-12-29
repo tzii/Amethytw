@@ -78,6 +78,8 @@ build_log.txt
 # Documentation files (not needed in repo)
 AGENTS.md
 TODO.md
+docs/TODO.md
+docs/CHANGELOG.md
 CHANGELOG.md
 
 # Temporary/accidental files
