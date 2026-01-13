@@ -300,6 +300,17 @@
             app:tint="@android:color/white"
             tools:visibility="visible" />
 
+        <ImageButton
+            android:id="@+id/multiStream"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_multi_stream"
+            android:contentDescription="@string/multi_stream"
+            android:visibility="gone"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
+
     </LinearLayout>
 
     <LinearLayout

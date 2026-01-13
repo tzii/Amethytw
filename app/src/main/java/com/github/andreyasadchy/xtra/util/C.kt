@@ -227,6 +227,12 @@ object C {
     const val FLOATING_CHAT_TRANSPARENCY = "floating_chat_transparency"
     const val FLOATING_CHAT_HIGH_VISIBILITY = "floating_chat_high_visibility"
     const val FLOATING_CHAT_ENABLED = "floating_chat_enabled"
+    
+    // Multi-Stream preferences
+    const val MULTI_STREAM_ENABLED = "multi_stream_enabled"
+    const val MULTI_STREAM_DEFAULT_LAYOUT = "multi_stream_default_layout"
+    const val MULTI_STREAM_AUDIO_INDICATOR = "multi_stream_audio_indicator"
+    const val PLAYER_MULTI_STREAM_BUTTON = "player_multi_stream_button"
     const val TOKEN_XDEVICEID = "token_xdeviceid"
     const val TOKEN_RANDOM_DEVICEID = "token_random_deviceid"
     const val TOKEN_PLAYERTYPE = "token_playertype"

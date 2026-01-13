@@ -68,7 +68,34 @@ class ExoPlayerService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    var player: ExoPlayer? = null
+    /**
+     * Player slot enum for multi-stream support
+     */
+    enum class PlayerSlot {
+        PRIMARY,
+        SECONDARY
+    }
+
+    // Primary player (backward compatible - aliased as 'player')
+    private var primaryPlayer: ExoPlayer? = null
+    
+    // Secondary player for multi-stream mode
+    private var secondaryPlayer: ExoPlayer? = null
+    
+    // Current audio source - which player has audio focus
+    private var activeAudioSlot: PlayerSlot = PlayerSlot.PRIMARY
+    
+    // Backward compatible alias for existing code
+    val player: ExoPlayer?
+        get() = primaryPlayer
+    
+    // Secondary player dynamics processing
+    private var secondaryDynamicsProcessing: DynamicsProcessing? = null
+    
+    // Secondary player video/offline IDs
+    var secondaryVideoId: Long? = null
+    var secondaryOfflineVideoId: Int? = null
+    
     private var session: MediaSession? = null
     private var notificationManager: NotificationManager? = null
     private var applicationHandler: Handler? = null
@@ -85,134 +112,22 @@ class ExoPlayerService : Service() {
     private var sleepTimerEndTime = 0L
     private var lastSavedPosition: Long? = null
     private var savePositionTimer: Timer? = null
+    
+// Multi-stream state
+    var isMultiStreamActive: Boolean = false
+        private set
 
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this).apply {
-            setLoadControl(
-                DefaultLoadControl.Builder().apply {
-                    setBufferDurationsMs(
-                        prefs().getString(C.PLAYER_BUFFER_MIN, "15000")?.toIntOrNull() ?: 15000,
-                        prefs().getString(C.PLAYER_BUFFER_MAX, "50000")?.toIntOrNull() ?: 50000,
-                        prefs().getString(C.PLAYER_BUFFER_PLAYBACK, "2000")?.toIntOrNull() ?: 2000,
-                        prefs().getString(C.PLAYER_BUFFER_REBUFFER, "2000")?.toIntOrNull() ?: 2000
-                    )
-                }.build()
-            )
-            setAudioAttributes(AudioAttributes.DEFAULT, prefs().getBoolean(C.PLAYER_AUDIO_FOCUS, false))
-            setHandleAudioBecomingNoisy(prefs().getBoolean(C.PLAYER_HANDLE_AUDIO_BECOMING_NOISY, true))
-            setSeekBackIncrementMs(prefs().getString(C.PLAYER_REWIND, "10000")?.toLongOrNull() ?: 10000)
-            setSeekForwardIncrementMs(prefs().getString(C.PLAYER_FORWARD, "10000")?.toLongOrNull() ?: 10000)
-        }.build()
-        this.player = player
-        player.addListener(
-            object : Player.Listener {
-                override fun onAudioSessionIdChanged(audioSessionId: Int) {
-                    dynamicsProcessing?.let {
-                        it.release()
-                        dynamicsProcessing = null
-                    }
-                    if (prefs().getBoolean(C.PLAYER_AUDIO_COMPRESSOR, false)) {
-                        reinitializeDynamicsProcessing(audioSessionId)
-                    }
-                }
-
-                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    updatePlaybackState()
-                    updateMetadata()
-                }
-
-                override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) {
-                    updateMetadata()
-                    updateNotification()
-                }
-
-                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                    updateMetadata()
-                    updateNotification()
-                }
-
-                override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
-                    updatePlaybackState()
-                }
-
-                override fun onPlayerError(error: PlaybackException) {
-                    updatePlaybackState()
-                    if (background) {
-                        player.prepare()
-                    }
-                }
-
-                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                    updatePlaybackState()
-                    updateNotification()
-                }
-
-                override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
-                    updatePlaybackState()
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    updatePlaybackState()
-                    updateNotification()
-                }
-
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    updatePlaybackState()
-                    if (isPlaying) {
-                        if (savePositionTimer == null && (videoId != null || offlineVideoId != null)) {
-                            savePositionTimer = Timer().apply {
-                                scheduleAtFixedRate(30000, 30000) {
-                                    Handler(Looper.getMainLooper()).post {
-                                        updateSavedPosition()
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        savePositionTimer?.cancel()
-                        savePositionTimer = null
-                        updateSavedPosition()
-                    }
-                }
-
-                override fun onPositionDiscontinuity(oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int) {
-                    updatePlaybackState()
-                }
-
-                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
-                    updatePlaybackState()
-                }
-            }
-        )
+        val player = createExoPlayerInstance()
+        this.primaryPlayer = player
+        setupPrimaryPlayerListener(player)
+        
         val session = MediaSession(this, "ExoPlayerService")
         this.session = session
-        session.setCallback(
-            object : MediaSession.Callback() {
-                override fun onPrepare() = player.prepare()
-
-                override fun onPlay() {
-                    Util.handlePlayPauseButtonAction(player)
-                }
-
-                override fun onPause() = player.pause()
-                override fun onSkipToNext() = player.seekForward()
-                override fun onSkipToPrevious() = player.seekBack()
-                override fun onFastForward() = player.seekForward()
-                override fun onRewind() = player.seekBack()
-                override fun onStop() = player.stop()
-                override fun onSeekTo(pos: Long) = player.seekTo(pos)
-                override fun onSetPlaybackSpeed(speed: Float) = player.setPlaybackSpeed(speed)
-
-                override fun onCustomAction(action: String, extras: Bundle?) {
-                    when (action) {
-                        INTENT_REWIND -> player.seekBack()
-                        INTENT_FAST_FORWARD -> player.seekForward()
-                    }
-                }
-            }
-        )
+        setupMediaSessionCallback(session, player)
         session.isActive = true
+        
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channelId = getString(R.string.notification_playback_channel_id)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager?.getNotificationChannel(channelId) == null) {
@@ -229,6 +144,269 @@ class ExoPlayerService : Service() {
             )
         }
         applicationHandler = Handler(mainLooper)
+    }
+    
+    /**
+     * Creates a new ExoPlayer instance with standard configuration
+     */
+    private fun createExoPlayerInstance(): ExoPlayer {
+        return ExoPlayer.Builder(this).apply {
+            setLoadControl(
+                DefaultLoadControl.Builder().apply {
+                    setBufferDurationsMs(
+                        prefs().getString(C.PLAYER_BUFFER_MIN, "15000")?.toIntOrNull() ?: 15000,
+                        prefs().getString(C.PLAYER_BUFFER_MAX, "50000")?.toIntOrNull() ?: 50000,
+                        prefs().getString(C.PLAYER_BUFFER_PLAYBACK, "2000")?.toIntOrNull() ?: 2000,
+                        prefs().getString(C.PLAYER_BUFFER_REBUFFER, "2000")?.toIntOrNull() ?: 2000
+                    )
+                }.build()
+            )
+            setAudioAttributes(AudioAttributes.DEFAULT, prefs().getBoolean(C.PLAYER_AUDIO_FOCUS, false))
+            setHandleAudioBecomingNoisy(prefs().getBoolean(C.PLAYER_HANDLE_AUDIO_BECOMING_NOISY, true))
+            setSeekBackIncrementMs(prefs().getString(C.PLAYER_REWIND, "10000")?.toLongOrNull() ?: 10000)
+            setSeekForwardIncrementMs(prefs().getString(C.PLAYER_FORWARD, "10000")?.toLongOrNull() ?: 10000)
+        }.build()
+    }
+    
+    /**
+     * Sets up the primary player listener
+     */
+    private fun setupPrimaryPlayerListener(player: ExoPlayer) {
+        player.addListener(object : Player.Listener {
+            override fun onAudioSessionIdChanged(audioSessionId: Int) {
+                dynamicsProcessing?.let {
+                    it.release()
+                    dynamicsProcessing = null
+                }
+                if (prefs().getBoolean(C.PLAYER_AUDIO_COMPRESSOR, false)) {
+                    reinitializeDynamicsProcessing(audioSessionId)
+                }
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                updatePlaybackState()
+                updateMetadata()
+            }
+
+            override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) {
+                updateMetadata()
+                updateNotification()
+            }
+
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                updateMetadata()
+                updateNotification()
+            }
+
+            override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
+                updatePlaybackState()
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                updatePlaybackState()
+                if (background) {
+                    player.prepare()
+                }
+            }
+
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                updatePlaybackState()
+                updateNotification()
+            }
+
+            override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
+                updatePlaybackState()
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                updatePlaybackState()
+                updateNotification()
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updatePlaybackState()
+                if (isPlaying) {
+                    if (savePositionTimer == null && (videoId != null || offlineVideoId != null)) {
+                        savePositionTimer = Timer().apply {
+                            scheduleAtFixedRate(30000, 30000) {
+                                Handler(Looper.getMainLooper()).post {
+                                    updateSavedPosition()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    savePositionTimer?.cancel()
+                    savePositionTimer = null
+                    updateSavedPosition()
+                }
+            }
+
+            override fun onPositionDiscontinuity(oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int) {
+                updatePlaybackState()
+            }
+
+            override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                updatePlaybackState()
+            }
+        })
+    }
+    
+    /**
+     * Sets up the MediaSession callback
+     */
+    private fun setupMediaSessionCallback(session: MediaSession, player: ExoPlayer) {
+        session.setCallback(object : MediaSession.Callback() {
+            override fun onPrepare() = player.prepare()
+
+            override fun onPlay() {
+                Util.handlePlayPauseButtonAction(player)
+            }
+
+            override fun onPause() = player.pause()
+            override fun onSkipToNext() = player.seekForward()
+            override fun onSkipToPrevious() = player.seekBack()
+            override fun onFastForward() = player.seekForward()
+            override fun onRewind() = player.seekBack()
+            override fun onStop() = player.stop()
+            override fun onSeekTo(pos: Long) = player.seekTo(pos)
+            override fun onSetPlaybackSpeed(speed: Float) = player.setPlaybackSpeed(speed)
+
+            override fun onCustomAction(action: String, extras: Bundle?) {
+                when (action) {
+                    INTENT_REWIND -> player.seekBack()
+                    INTENT_FAST_FORWARD -> player.seekForward()
+                }
+            }
+        })
+    }
+    
+    // ==================== Multi-Stream Methods ====================
+    
+    /**
+     * Gets the secondary player instance (creates if needed for multi-stream)
+     */
+    fun getSecondaryPlayer(): ExoPlayer? = secondaryPlayer
+    
+    /**
+     * Creates and initializes the secondary player for multi-stream mode.
+     * Returns the new player instance or null if creation fails.
+     */
+    fun createSecondaryPlayer(): ExoPlayer? {
+        if (secondaryPlayer != null) {
+            return secondaryPlayer
+        }
+        
+        return try {
+            val player = createExoPlayerInstance()
+            // Secondary player starts muted (primary has audio by default)
+            player.volume = 0f
+            
+            player.addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    // Handle secondary player errors
+                    if (background) {
+                        player.prepare()
+                    }
+                }
+                
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    // Could notify UI about secondary player state
+                }
+            })
+            
+            secondaryPlayer = player
+            isMultiStreamActive = true
+            player
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    /**
+     * Releases the secondary player and exits multi-stream mode.
+     */
+    fun releaseSecondaryPlayer() {
+        secondaryPlayer?.let { player ->
+            player.stop()
+            player.clearMediaItems()
+            player.release()
+        }
+        secondaryPlayer = null
+        secondaryDynamicsProcessing?.release()
+        secondaryDynamicsProcessing = null
+        secondaryVideoId = null
+        secondaryOfflineVideoId = null
+        isMultiStreamActive = false
+        
+        // Ensure primary player has audio
+        activeAudioSlot = PlayerSlot.PRIMARY
+        primaryPlayer?.volume = prefs().getInt(C.PLAYER_VOLUME, 100) / 100f
+    }
+    
+    /**
+     * Gets the currently active audio slot
+     */
+    fun getActiveAudioSlot(): PlayerSlot = activeAudioSlot
+    
+    /**
+     * Switches audio focus to the specified player slot.
+     * The active slot gets user-configured volume, the other is muted.
+     */
+    fun setAudioSource(slot: PlayerSlot) {
+        activeAudioSlot = slot
+        val volume = prefs().getInt(C.PLAYER_VOLUME, 100) / 100f
+        
+        when (slot) {
+            PlayerSlot.PRIMARY -> {
+                primaryPlayer?.volume = volume
+                secondaryPlayer?.volume = 0f
+            }
+            PlayerSlot.SECONDARY -> {
+                primaryPlayer?.volume = 0f
+                secondaryPlayer?.volume = volume
+            }
+        }
+        
+        // Update MediaSession metadata to reflect the active stream
+        updateMetadataForActiveSlot()
+    }
+    
+    /**
+     * Toggles audio between primary and secondary players
+     */
+    fun toggleAudioSource(): PlayerSlot {
+        val newSlot = if (activeAudioSlot == PlayerSlot.PRIMARY) {
+            PlayerSlot.SECONDARY
+        } else {
+            PlayerSlot.PRIMARY
+        }
+        setAudioSource(newSlot)
+        return newSlot
+    }
+    
+    /**
+     * Updates MediaSession metadata based on the active audio slot
+     */
+    private fun updateMetadataForActiveSlot() {
+        val activePlayer = when (activeAudioSlot) {
+            PlayerSlot.PRIMARY -> primaryPlayer
+            PlayerSlot.SECONDARY -> secondaryPlayer
+        }
+        
+        activePlayer?.currentMediaItem?.mediaMetadata?.let { metadata ->
+            val loader = bitmapLoader ?: CacheBitmapLoader(DataSourceBitmapLoader.Builder(this).build()).also { bitmapLoader = it }
+            loader.loadBitmapFromMetadata(metadata)?.let { bitmapFuture ->
+                if (bitmapFuture.isDone) {
+                    try {
+                        setMetadata(bitmapFuture.get())
+                    } catch (e: Exception) {
+                        setMetadata(null)
+                    }
+                }
+            }
+        }
+        updateNotification()
     }
 
     private fun updatePlaybackState() {
@@ -622,9 +800,15 @@ class ExoPlayerService : Service() {
         stopSelf()
     }
 
-    override fun onDestroy() {
+override fun onDestroy() {
         serviceScope.cancel()
-        player?.release()
+        // Release secondary player if active
+        releaseSecondaryPlayer()
+        // Release primary player
+        primaryPlayer?.release()
+        primaryPlayer = null
+        dynamicsProcessing?.release()
+        dynamicsProcessing = null
         session?.release()
         metadataBitmapCallback = null
         notificationBitmapCallback = null

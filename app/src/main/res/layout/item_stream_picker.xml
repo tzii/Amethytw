@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical">
+
+    <!-- Channel logo -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/channelLogo"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
+        tools:src="@drawable/baseline_person_black_24" />
+
+    <!-- Stream info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical">
+
+        <!-- Channel name -->
+        <TextView
+            android:id="@+id/channelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="ChannelName" />
+
+        <!-- Stream title -->
+        <TextView
+            android:id="@+id/streamTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:alpha="0.8"
+            tools:text="Stream title goes here" />
+
+        <!-- Game name & viewers -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/gameName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:alpha="0.6"
+                tools:text="Just Chatting" />
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="4dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/baseline_circle_24"
+                android:alpha="0.4" />
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/baseline_person_black_24"
+                app:tint="?android:attr/textColorSecondary"
+                android:alpha="0.6" />
+
+            <TextView
+                android:id="@+id/viewerCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:layout_marginStart="2dp"
+                android:alpha="0.6"
+                tools:text="12.3K" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Stream thumbnail preview -->
+    <ImageView
+        android:id="@+id/streamThumbnail"
+        android:layout_width="80dp"
+        android:layout_height="45dp"
+        android:scaleType="centerCrop"
+        android:background="@android:color/black"
+        tools:src="@android:color/darker_gray" />
+
+</LinearLayout>

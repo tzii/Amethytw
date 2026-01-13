@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Two rectangles representing split screen view -->
+    <!-- Left rectangle -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,3h8v8H3V3z M5,5v4h4V5H5z" />
+    <!-- Right rectangle -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M13,3h8v8h-8V3z M15,5v4h4V5h-4z" />
+    <!-- Bottom rectangle (spanning full width) -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,13h18v8H3V13z M5,15v4h14v-4H5z" />
+</vector>

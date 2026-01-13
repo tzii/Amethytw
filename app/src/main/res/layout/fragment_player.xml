@@ -11,54 +11,191 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.github.andreyasadchy.xtra.ui.view.PlayerLayout
-            android:id="@+id/playerLayout"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@android:color/black">
+        <!-- Multi-stream container with ConstraintLayout for animated transitions -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/multiStreamContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <androidx.media3.ui.AspectRatioFrameLayout
-                android:id="@+id/aspectRatioFrameLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <!-- Primary player layout -->
+            <com.github.andreyasadchy.xtra.ui.view.PlayerLayout
+                android:id="@+id/playerLayout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@android:color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <SurfaceView
-                    android:id="@+id/playerSurface"
+                <androidx.media3.ui.AspectRatioFrameLayout
+                    android:id="@+id/aspectRatioFrameLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <SurfaceView
+                        android:id="@+id/playerSurface"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                </androidx.media3.ui.AspectRatioFrameLayout>
+
+                <androidx.media3.ui.SubtitleView
+                    android:id="@+id/subtitleView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
-            </androidx.media3.ui.AspectRatioFrameLayout>
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/bufferingIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
 
-            <androidx.media3.ui.SubtitleView
-                android:id="@+id/subtitleView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                <!-- Audio indicator for primary stream -->
+                <FrameLayout
+                    android:id="@+id/primaryAudioIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_audio_indicator"
+                    android:padding="6dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-            <com.google.android.material.progressindicator.CircularProgressIndicator
-                android:id="@+id/bufferingIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminate="true"
-                android:visibility="gone" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/baseline_volume_up_black_24"
+                        app:tint="@android:color/white"
+                        android:contentDescription="@string/audio_active" />
 
-            <include
-                android:id="@+id/gestureFeedback"
-                layout="@layout/player_volume"
-                android:layout_width="300dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone" />
-            <include
-                android:id="@+id/playerControls"
-                layout="@layout/player_layout" />
+                </FrameLayout>
 
-            <View
-                android:id="@+id/dragView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                <include
+                    android:id="@+id/gestureFeedback"
+                    layout="@layout/player_volume"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+                <include
+                    android:id="@+id/playerControls"
+                    layout="@layout/player_layout" />
 
-        </com.github.andreyasadchy.xtra.ui.view.PlayerLayout>
+                <View
+                    android:id="@+id/dragView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.github.andreyasadchy.xtra.ui.view.PlayerLayout>
+
+            <!-- Secondary player layout (for multi-stream) - hidden by default -->
+            <FrameLayout
+                android:id="@+id/secondaryPlayerContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@android:color/black"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="visible">
+
+                <androidx.media3.ui.AspectRatioFrameLayout
+                    android:id="@+id/secondaryAspectRatioFrameLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <SurfaceView
+                        android:id="@+id/secondaryPlayerSurface"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                </androidx.media3.ui.AspectRatioFrameLayout>
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/secondaryBufferingIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+
+                <!-- Audio indicator for secondary stream -->
+                <FrameLayout
+                    android:id="@+id/secondaryAudioIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_audio_indicator"
+                    android:padding="6dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/baseline_volume_up_black_24"
+                        app:tint="@android:color/white"
+                        android:contentDescription="@string/audio_active" />
+
+                </FrameLayout>
+
+                <!-- Stream info overlay for secondary stream -->
+                <LinearLayout
+                    android:id="@+id/secondaryStreamInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_stream_info_overlay"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/secondaryChannelName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="Secondary Stream" />
+
+                </LinearLayout>
+
+                <!-- Touch overlay for secondary stream interactions -->
+                <View
+                    android:id="@+id/secondaryDragView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- Close button for secondary stream (PiP mode) -->
+                <ImageButton
+                    android:id="@+id/secondaryCloseButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_audio_indicator"
+                    android:padding="4dp"
+                    android:src="@drawable/baseline_close_black_36"
+                    android:visibility="gone"
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/multi_stream_remove"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.github.andreyasadchy.xtra.ui.view.ChatLayout
             android:id="@+id/chatLayout"

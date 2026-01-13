@@ -753,4 +753,18 @@
     <string name="default_cellular_quality">Default player quality on cellular network</string>
     <string name="player">Player</string>
     <string name="compact_number_formatting">Compact number formatting</string>
+    
+    <!-- Multi-stream feature -->
+    <string name="audio_active">Audio active on this stream</string>
+    <string name="multi_stream">Multi-Stream</string>
+    <string name="multi_stream_add">Add Stream</string>
+    <string name="multi_stream_remove">Remove Stream</string>
+    <string name="multi_stream_swap_audio">Switch Audio</string>
+    <string name="multi_stream_cycle_layout">Change Layout</string>
+    <string name="multi_stream_select_stream">Select a stream to watch</string>
+    <string name="multi_stream_search_hint">Search for a channel</string>
+    <string name="multi_stream_no_followed_live">No followed channels are live</string>
+    <string name="layout_split_horizontal">Side by Side</string>
+    <string name="layout_split_vertical">Top and Bottom</string>
+    <string name="layout_pip_overlay">Picture in Picture</string>
 </resources>
