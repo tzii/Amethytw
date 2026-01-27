@@ -67,8 +67,16 @@ class ChatAdapter(
     private val translateMessage: (ChatMessage, String?) -> Unit,
     private val showLanguageDownloadDialog: (ChatMessage, String) -> Unit,
     private val channelId: String?,
-    private val useHighVisibility: Boolean = false,
+    useHighVisibility: Boolean = false,
 ) : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
+
+    var useHighVisibility: Boolean = useHighVisibility
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
 
     var messages: MutableList<ChatMessage>? = null
         set(value) {

@@ -2840,6 +2840,9 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
 
         // Reparent the chat view instead of recreating the fragment
         reparentChatView(toFloating = isFloatingChatEnabled)
+        
+        // Update chat adapter's high visibility mode for text readability
+        chatFragment?.setFloatingMode(isFloatingChatEnabled)
 
         if (isFloatingChatEnabled) {
             // Hide sidebar chat and reset player margin

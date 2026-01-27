@@ -1548,6 +1548,17 @@ class ChatFragment : BaseNetworkFragment(), MessageClickedDialog.OnButtonClickLi
         }
     }
 
+    /**
+     * Updates the chat adapter's high visibility mode when toggling floating chat.
+     * High visibility adds text shadow and bold font for readability on dark backgrounds.
+     */
+    fun setFloatingMode(enabled: Boolean) {
+        if (::adapter.isInitialized) {
+            val useHighVisibility = enabled && requireContext().prefs().getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, true)
+            adapter.useHighVisibility = useHighVisibility
+        }
+    }
+
     companion object {
         private const val KEY_IS_LIVE = "isLive"
         private const val KEY_CHANNEL_ID = "channel_id"
