@@ -49,6 +49,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.trackPipAnimationHintView
 import androidx.annotation.OptIn
 import androidx.core.content.edit
+import androidx.core.content.res.use
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -2854,7 +2855,14 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             // Apply transparency to the container background, not the whole view
             val transparency = prefs.getInt(C.FLOATING_CHAT_TRANSPARENCY, 0)
             val alpha = (transparency * 255 / 100).coerceIn(0, 255)
-            binding.floatingChatContainer.setBackgroundColor(Color.argb(alpha, 0, 0, 0))
+            val isLightTheme = requireContext().obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.isLightTheme)).use {
+                it.getBoolean(0, false)
+            }
+            if (transparency >= 100 && isLightTheme) {
+                binding.floatingChatContainer.setBackgroundColor(Color.WHITE)
+            } else {
+                binding.floatingChatContainer.setBackgroundColor(Color.argb(alpha, 0, 0, 0))
+            }
         } else {
             // Hide with fade-out animation
             binding.floatingChatRoot.animate().alpha(0f).setDuration(200)

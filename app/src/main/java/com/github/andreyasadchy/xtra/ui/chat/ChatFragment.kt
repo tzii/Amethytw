@@ -1554,8 +1554,41 @@ class ChatFragment : BaseNetworkFragment(), MessageClickedDialog.OnButtonClickLi
      */
     fun setFloatingMode(enabled: Boolean) {
         if (::adapter.isInitialized) {
-            val useHighVisibility = enabled && requireContext().prefs().getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, true)
-            adapter.useHighVisibility = useHighVisibility
+            val transparency = requireContext().prefs().getInt(C.FLOATING_CHAT_TRANSPARENCY, 0)
+            // 100 transparency value in prefs means 100% opacity (solid), 0 means 0% opacity (transparent)
+            // based on PlayerFragment logic: alpha = transparency * 255 / 100
+            
+            val isLightTheme = requireContext().obtainStyledAttributes(intArrayOf(androidx.appcompat.R.attr.isLightTheme)).use {
+                it.getBoolean(0, false)
+            }
+
+            if (enabled) {
+                if (transparency < 100) {
+                    // Transparent/Semi-transparent: Treat as Dark Mode (Light text on Dark/Transparent BG)
+                    adapter.overrideTextColor = android.graphics.Color.WHITE
+                    adapter.forceDarkTheme = true
+                    // Enforce high visibility for transparent/video overlay
+                    adapter.useHighVisibility = true 
+                } else {
+                    // Opaque (Solid) Background
+                    if (isLightTheme) {
+                        // Opaque Light: Dark Text on Light BG
+                        adapter.overrideTextColor = android.graphics.Color.BLACK
+                        adapter.forceDarkTheme = false
+                        adapter.useHighVisibility = requireContext().prefs().getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, true)
+                    } else {
+                        // Opaque Dark: Light Text on Dark BG
+                        adapter.overrideTextColor = android.graphics.Color.WHITE
+                        adapter.forceDarkTheme = true
+                        adapter.useHighVisibility = requireContext().prefs().getBoolean(C.FLOATING_CHAT_HIGH_VISIBILITY, true)
+                    }
+                }
+            } else {
+                // Standard Side Chat: Reset to defaults (follow theme)
+                adapter.overrideTextColor = null
+                adapter.forceDarkTheme = false
+                adapter.useHighVisibility = false
+            }
         }
     }
 

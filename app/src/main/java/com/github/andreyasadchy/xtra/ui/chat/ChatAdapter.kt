@@ -78,6 +78,22 @@ class ChatAdapter(
             }
         }
 
+    var overrideTextColor: Int? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    var forceDarkTheme: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     var messages: MutableList<ChatMessage>? = null
         set(value) {
             val oldSize = field?.size ?: 0
@@ -125,17 +141,23 @@ class ChatAdapter(
         val chatMessage = messages?.get(position) ?: return
         val result = ChatAdapterUtils.prepareChatMessage(
             chatMessage, holder.textView, enableTimestamps, timestampFormat, firstMsgVisibility, firstChatMsg, redeemedChatMsg, redeemedNoMsg,
-            rewardChatMsg, replyMessage, null, useRandomColors, random, useReadableColors, isLightTheme, nameDisplay, useBoldNames, showNamePaints,
+            rewardChatMsg, replyMessage, null, useRandomColors, random, useReadableColors, if (forceDarkTheme) false else isLightTheme, nameDisplay, useBoldNames, showNamePaints,
             namePaints, paintUsers, showStvBadges, stvBadges, stvBadgeUsers, showPersonalEmotes, personalEmoteSets, personalEmoteSetUsers, enableOverlayEmotes,
             showSystemMessageEmotes, loggedInUser, chatUrl, getEmoteBytes, userColors, savedColors, translateAllMessages, translateMessage,
             showLanguageDownloadDialog, true, localTwitchEmotes, globalStvEmotes, channelStvEmotes, globalBttvEmotes, channelBttvEmotes, globalFfzEmotes,
             channelFfzEmotes, globalBadges, channelBadges, cheerEmotes, savedLocalTwitchEmotes, savedLocalBadges, savedLocalCheerEmotes, savedLocalEmotes
         )
         holder.bind(chatMessage, result.builder)
+        if (overrideTextColor != null) {
+            holder.textView.setTextColor(overrideTextColor!!)
+        } else {
+            holder.textView.setTextColor(holder.defaultTextColors)
+        }
+        
         ChatAdapterUtils.loadImages(
-            fragment, holder.textView, { holder.bind(chatMessage, it) }, result.images, result.imagePaint, result.userName, result.userNameStartIndex,
+            fragment, holder.textView, { holder.bind(chatMessage, it); if (overrideTextColor != null) holder.textView.setTextColor(overrideTextColor!!) }, result.images, result.imagePaint, result.userName, result.userNameStartIndex,
             backgroundColor, imageLibrary, result.builder, result.translated, emoteSize, badgeSize, emoteQuality, animateGifs, enableOverlayEmotes,
-            chatMessage, savedColors, useReadableColors, isLightTheme, showLanguageDownloadDialog, true
+            chatMessage, savedColors, useReadableColors, if (forceDarkTheme) false else isLightTheme, showLanguageDownloadDialog, true
         )
     }
 
@@ -150,7 +172,7 @@ class ChatAdapter(
                 }
             )
             if (!chatMessage.translationFailed) {
-                ChatAdapterUtils.addTranslation(chatMessage, builder, builder.length, savedColors, useReadableColors, isLightTheme, showLanguageDownloadDialog, true)
+                ChatAdapterUtils.addTranslation(chatMessage, builder, builder.length, savedColors, useReadableColors, if (forceDarkTheme) false else isLightTheme, showLanguageDownloadDialog, true)
             }
             item.text = builder
         }
@@ -257,6 +279,7 @@ class ChatAdapter(
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val textView = itemView as TextView
+        val defaultTextColors = textView.textColors
 
         fun bind(chatMessage: ChatMessage, formattedMessage: SpannableStringBuilder) {
             textView.apply {
