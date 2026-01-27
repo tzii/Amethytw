@@ -2,8 +2,18 @@ package com.github.andreyasadchy.xtra.util
 
 import android.graphics.Rect
 import android.view.View
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+
+fun View.visible() {
+    isVisible = true
+}
+
+fun View.gone() {
+    isGone = true
+}
 
 val View.isKeyboardShown: Boolean
     get() {

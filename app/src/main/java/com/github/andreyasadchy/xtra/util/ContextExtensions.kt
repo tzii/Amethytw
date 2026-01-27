@@ -4,7 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.use
@@ -283,6 +286,30 @@ fun Context.getAlertDialogBuilder(): AlertDialog.Builder {
     } else {
         AlertDialog.Builder(this)
     }
+}
+
+fun Context.toast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, message, duration).show()
+}
+
+fun Context.toast(message: Int, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, message, duration).show()
+}
+
+fun androidx.fragment.app.Fragment.toast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    requireContext().toast(message, duration)
+}
+
+fun androidx.fragment.app.Fragment.toast(message: Int, duration: Int = Toast.LENGTH_SHORT) {
+    requireContext().toast(message, duration)
+}
+
+fun androidx.fragment.app.Fragment.shortToast(message: String) {
+    toast(message, Toast.LENGTH_SHORT)
+}
+
+fun androidx.fragment.app.Fragment.shortToast(message: Int) {
+    toast(message, Toast.LENGTH_SHORT)
 }
 
 fun getByteArrayCronetCallback(continuation: Continuation<Pair<UrlResponseInfo, ByteArray>>): ByteArrayCronetCallback {

@@ -83,13 +83,7 @@ import com.github.andreyasadchy.xtra.ui.download.DownloadDialog
 import com.github.andreyasadchy.xtra.ui.game.GameMediaFragmentDirections
 import com.github.andreyasadchy.xtra.ui.game.GamePagerFragmentDirections
 import com.github.andreyasadchy.xtra.ui.main.MainActivity
-import com.github.andreyasadchy.xtra.util.C
-import com.github.andreyasadchy.xtra.util.TwitchApiHelper
-import com.github.andreyasadchy.xtra.util.getAlertDialogBuilder
-import com.github.andreyasadchy.xtra.util.isKeyboardShown
-import com.github.andreyasadchy.xtra.util.isMeteredConnection
-import com.github.andreyasadchy.xtra.util.prefs
-import com.github.andreyasadchy.xtra.util.tokenPrefs
+import com.github.andreyasadchy.xtra.util.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -1668,7 +1662,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
         val isMetered = requireContext().isMeteredConnection
 
         viewModel.quality = if (isDataSaver && isMetered && !viewModel.userHasChangedQuality) {
-             requireContext().shortToast(R.string.data_saver_mode)
+             shortToast(R.string.data_saver_mode)
              findQuality("480p") ?: findQuality("360p") ?: viewModel.qualities.entries.firstOrNull()?.key
         } else {
             when (defaultQuality) {

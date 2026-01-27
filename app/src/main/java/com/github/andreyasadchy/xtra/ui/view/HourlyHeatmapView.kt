@@ -7,6 +7,7 @@
  import android.graphics.RectF
  import android.util.AttributeSet
 import android.view.View
+import com.github.andreyasadchy.xtra.R
 import com.google.android.material.color.MaterialColors
 
 /**
@@ -38,7 +39,7 @@ class HourlyHeatmapView @JvmOverloads constructor(
 
     init {
         lowColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurfaceContainerHighest, Color.parseColor("#1E3A5F"))
-        highColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.parseColor("#58A6FF"))
+        highColor = MaterialColors.getColor(context, androidx.appcompat.R.attr.colorPrimary, Color.parseColor("#58A6FF"))
     }
 
     fun setData(data: List<Pair<Int, Long>>) {

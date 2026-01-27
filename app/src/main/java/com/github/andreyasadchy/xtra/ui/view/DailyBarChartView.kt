@@ -34,7 +34,7 @@ class DailyBarChartView @JvmOverloads constructor(
 
     // Paints
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLUE)
+        color = MaterialColors.getColor(context, androidx.appcompat.R.attr.colorPrimary, Color.BLUE)
         style = Paint.Style.FILL
     }
 
