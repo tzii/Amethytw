@@ -108,7 +108,7 @@ import kotlin.math.max
 
 @OptIn(UnstableApi::class)
 @AndroidEntryPoint
-abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment.OnSortOptionChanged, IntegrityDialog.CallbackListener {
+abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment.OnSortOptionChanged, IntegrityDialog.CallbackListener, PlayerGestureCallback {
 
     private var _binding: FragmentPlayerBinding? = null
     private val hideGestureRunnable = Runnable { binding.playerLayout.findViewById<View>(R.id.gestureFeedback)?.gone() }
@@ -117,8 +117,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     protected var chatFragment: ChatFragment? = null
 
     protected var videoType: String? = null
-    private var isPortrait = false
-    var isMaximized = true
+    override var isPortrait = false
+    override var isMaximized = true
     private var isChatOpen = true
     private var isKeyboardShown = false
     private var resizeMode = 0
@@ -177,7 +177,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     open fun seekToLivePosition() {}
     open fun setPlaybackSpeed(speed: Float) {}
     open fun changeVolume(volume: Float) {}
-    open fun updateProgress() {}
+    override fun updateProgress() {}
     open fun toggleAudioCompressor() {}
     open fun setSubtitlesButton() {}
     open fun toggleSubtitles(enabled: Boolean) {}
@@ -292,127 +292,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             val doubleTap = prefs.getBoolean(C.PLAYER_DOUBLETAP, true) && !prefs.getBoolean(C.CHAT_DISABLE, false)
             val controllerTapDetector = GestureDetector(
                 requireContext(),
-                object : GestureDetector.SimpleOnGestureListener() {
-                    private var isVolume = false
-                    private var isBrightness = false
-                    private var startVolume = 0
-                    private var startBrightness = 0f
-                    private var gestureStartY = 0f
-
-                    override fun onDown(e: MotionEvent): Boolean {
-                        isVolume = false
-                        isBrightness = false
-                        gestureStartY = e.y
-                        return true
-                    }
-
-                    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-                        if (e1 == null || isPortrait || !isMaximized || playerControls.root.isVisible) return false
-                        
-                        val width = resources.displayMetrics.widthPixels
-                        val height = resources.displayMetrics.heightPixels
-                        
-                        if (!isVolume && !isBrightness) {
-                             if (Math.abs(distanceY) > Math.abs(distanceX)) {
-                                 if (e1.x < width / 2) {
-                                     isBrightness = true
-                                     startBrightness = requireActivity().window.attributes.screenBrightness
-                                     if (startBrightness < 0) startBrightness = 0.5f // Default fallback
-                                 } else {
-                                     isVolume = true
-                                     val audioManager = requireContext().getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-                                     startVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                                 }
-                             }
-                        }
-
-                        val percent = (gestureStartY - e2.y) / height
-                        val feedback = binding.playerLayout.findViewById<View>(R.id.gestureFeedback)
-                        val icon = feedback.findViewById<ImageView>(R.id.volumeMute)
-                        val slider = feedback.findViewById<Slider>(R.id.volumeBar)
-                        val text = feedback.findViewById<TextView>(R.id.volumeText)
-
-                        if (isBrightness) {
-                            val newBrightness = (startBrightness + percent).coerceIn(0.01f, 1.0f)
-                            val lp = requireActivity().window.attributes
-                            lp.screenBrightness = newBrightness
-                            requireActivity().window.attributes = lp
-                            
-                            icon.setImageResource(R.drawable.ic_brightness_medium_black_24dp)
-                            feedback.visible()
-                            feedback.removeCallbacks(hideGestureRunnable)
-                            feedback.postDelayed(hideGestureRunnable, 1000)
-                            
-                            slider.value = newBrightness * 100
-                            text.text = "%d".format((newBrightness * 100).toInt())
-                            return true
-                        }
-                        
-                        if (isVolume) {
-                            val audioManager = requireContext().getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-                            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                            val newVolume = (startVolume + (percent * maxVolume)).toInt().coerceIn(0, maxVolume)
-                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
-                            
-                            icon.setImageResource(R.drawable.baseline_volume_up_black_24)
-                            feedback.visible()
-                            feedback.removeCallbacks(hideGestureRunnable)
-                            feedback.postDelayed(hideGestureRunnable, 1000)
-                            
-                            slider.value = (newVolume.toFloat() / maxVolume.toFloat()) * 100
-                            text.text = "%d".format((slider.value).toInt())
-                            return true
-                        }
-
-                        return false
-                    }
-                    override fun onSingleTapUp(e: MotionEvent): Boolean {
-                        return if (!doubleTap || isPortrait) {
-                            val visible = playerControls.root.isVisible
-                            if (visible) {
-                                if (controllerHideOnTouch) {
-                                    hideController()
-                                }
-                            } else {
-                                showController()
-                            }
-                            if (!visible) {
-                                updateProgress()
-                            }
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                        return if (doubleTap && !isPortrait) {
-                            val visible = playerControls.root.isVisible
-                            if (visible) {
-                                if (controllerHideOnTouch) {
-                                    hideController()
-                                }
-                            } else {
-                                showController()
-                            }
-                            if (!visible) {
-                                updateProgress()
-                            }
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    override fun onDoubleTap(e: MotionEvent): Boolean {
-                        return if (doubleTap && !isPortrait && isMaximized) {
-                            cycleChatMode()
-                            true
-                        } else {
-                            false
-                        }
-                    }
-                }
+                PlayerGestureListener(requireContext(), this@PlayerFragment, doubleTap)
             )
 
             fun downAction(event: MotionEvent) {
@@ -2804,7 +2684,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
         }
     }
 
-    private fun cycleChatMode() {
+    override fun cycleChatMode() {
         // Check if floating chat is enabled in settings
         val floatingChatAllowed = prefs.getBoolean(C.FLOATING_CHAT_ENABLED, true)
         
@@ -2962,4 +2842,16 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             }
         }
     }
+
+    // PlayerGestureCallback implementation
+    override val isControlsVisible get() = binding.playerControls.root.isVisible
+    override val screenWidth get() = resources.displayMetrics.widthPixels
+    override val screenHeight get() = resources.displayMetrics.heightPixels
+    override val windowAttributes: android.view.WindowManager.LayoutParams get() = requireActivity().window.attributes
+    override fun setWindowAttributes(params: android.view.WindowManager.LayoutParams) { requireActivity().window.attributes = params }
+    override fun getGestureFeedbackView() = binding.playerLayout.findViewById<View>(R.id.gestureFeedback)
+    override fun getHideGestureRunnable() = hideGestureRunnable
+    override fun isControllerHideOnTouch() = controllerHideOnTouch
+    override fun showController() = showController(false)
+    override fun hideController() = hideController(false)
 }
