@@ -82,6 +82,7 @@ class ChatViewModel @Inject constructor(
     private val helixRepository: HelixRepository,
     private val playerRepository: PlayerRepository,
     private val emoteCache: EmoteCache,
+    private val chatAssetLoader: ChatAssetLoader,
     private val okHttpClient: OkHttpClient,
     private val trustManager: X509TrustManager?,
     private val json: Json,
@@ -104,7 +105,6 @@ class ChatViewModel @Inject constructor(
     private var stvEventApi: StvEventApiWebSocket? = null
     private var stvUserId: String? = null
     private var stvLastPresenceUpdate: Long? = null
-    private val allEmotes = mutableListOf<Emote>()
     private var usedRaidId: String? = null
     private var usedPollId: String? = null
     private var pollTimeoutJob: Job? = null
@@ -117,31 +117,46 @@ class ChatViewModel @Inject constructor(
 
     val recentEmotes by lazy { playerRepository.loadRecentEmotesFlow() }
     val hasRecentEmotes = MutableStateFlow(false)
-    private val _userEmotes = MutableStateFlow<List<Emote>?>(null)
-    val userEmotes: StateFlow<List<Emote>?> = _userEmotes
-    private var loadedUserEmotes = false
+
+    // Global Emotes (from EmoteCache)
+    val globalBadges: StateFlow<List<TwitchBadge>?> = emoteCache.globalBadges
+    val globalStvEmotes: StateFlow<List<Emote>?> = emoteCache.globalStvEmotes
+    val globalBttvEmotes: StateFlow<List<Emote>?> = emoteCache.globalBttvEmotes
+    val globalFfzEmotes: StateFlow<List<Emote>?> = emoteCache.globalFfzEmotes
+
+    // Channel/User Emotes (from ChatAssetLoader)
+    val userEmotes: StateFlow<List<Emote>?> = chatAssetLoader.userEmotes
+    val channelStvEmotes: StateFlow<List<Emote>?> = chatAssetLoader.channelStvEmotes
+    val channelBttvEmotes: StateFlow<List<Emote>?> = chatAssetLoader.channelBttvEmotes
+    val channelFfzEmotes: StateFlow<List<Emote>?> = chatAssetLoader.channelFfzEmotes
+    val channelBadges: StateFlow<List<TwitchBadge>?> = chatAssetLoader.channelBadges
+    val cheerEmotes: StateFlow<List<CheerEmote>?> = chatAssetLoader.cheerEmotes
+    
+    // User Personal Emote Set (kept here for now or move to loader if needed)
     private val _userPersonalEmoteSet = MutableStateFlow<Pair<String, List<Emote>>?>(null)
     val userPersonalEmoteSet: StateFlow<Pair<String, List<Emote>>?> = _userPersonalEmoteSet
+    
+    // Local Twitch Emotes (probably user related, keep for now)
     private val _localTwitchEmotes = MutableStateFlow<List<TwitchEmote>?>(null)
     val localTwitchEmotes: StateFlow<List<TwitchEmote>?> = _localTwitchEmotes
-    private val _globalStvEmotes = MutableStateFlow<List<Emote>?>(null)
-    val globalStvEmotes: StateFlow<List<Emote>?> = _globalStvEmotes
-    private val _channelStvEmotes = MutableStateFlow<List<Emote>?>(null)
-    val channelStvEmotes: StateFlow<List<Emote>?> = _channelStvEmotes
-    private val _globalBttvEmotes = MutableStateFlow<List<Emote>?>(null)
-    val globalBttvEmotes: StateFlow<List<Emote>?> = _globalBttvEmotes
-    private val _channelBttvEmotes = MutableStateFlow<List<Emote>?>(null)
-    val channelBttvEmotes: StateFlow<List<Emote>?> = _channelBttvEmotes
-    private val _globalFfzEmotes = MutableStateFlow<List<Emote>?>(null)
-    val globalFfzEmotes: StateFlow<List<Emote>?> = _globalFfzEmotes
-    private val _channelFfzEmotes = MutableStateFlow<List<Emote>?>(null)
-    val channelFfzEmotes: StateFlow<List<Emote>?> = _channelFfzEmotes
-    private val _globalBadges = MutableStateFlow<List<TwitchBadge>?>(null)
-    val globalBadges: StateFlow<List<TwitchBadge>?> = _globalBadges
-    private val _channelBadges = MutableStateFlow<List<TwitchBadge>?>(null)
-    val channelBadges: StateFlow<List<TwitchBadge>?> = _channelBadges
-    private val _cheerEmotes = MutableStateFlow<List<CheerEmote>?>(null)
-    val cheerEmotes: StateFlow<List<CheerEmote>?> = _cheerEmotes
+
+    // Accessors for logic that needs all loaded emotes (e.g. autocomplete)
+    // Note: This needs to be thread-safe or accessed carefully
+    private val allEmotes: List<Emote> get() = chatAssetLoader.allEmotes
+
+    init {
+        chatAssetLoader.onReloadMessagesRequest = {
+            if (!reloadMessages.value) {
+                reloadMessages.value = true
+            }
+        }
+        chatAssetLoader.onIntegrityRequest = {
+            if (integrity.value == null) {
+                integrity.value = "refresh"
+            }
+        }
+    }
+
 
     val roomState = MutableStateFlow<RoomState?>(null)
     val raid = MutableStateFlow<Raid?>(null)
@@ -173,7 +188,10 @@ class ChatViewModel @Inject constructor(
     val newPersonalEmoteSet = MutableStateFlow<Pair<String, List<Emote>>?>(null)
     val personalEmoteSetUsers = mutableMapOf<String, String>()
     val newPersonalEmoteSetUser = MutableStateFlow<Pair<String, String>?>(null)
-    var channelStvEmoteSetId: String? = null
+    
+    // channelStvEmoteSetId is now in ChatAssetLoader
+    val channelStvEmoteSetId: String? get() = chatAssetLoader.channelStvEmoteSetId
+    
     val translateAllMessages = MutableStateFlow<Boolean?>(null)
 
     val reloadMessages = MutableStateFlow(false)
@@ -195,7 +213,7 @@ class ChatViewModel @Inject constructor(
             this.streamId = streamId
             startLiveChat(channelId, channelLogin)
             addChatter(channelName)
-            loadEmotes(channelId, channelLogin)
+            chatAssetLoader.loadEmotes(viewModelScope, channelId, channelLogin)
             if (applicationContext.prefs().getBoolean(C.CHAT_RECENT, true)) {
                 loadRecentMessages(networkLibrary, channelLogin)
             }
@@ -203,7 +221,7 @@ class ChatViewModel @Inject constructor(
                     (!TwitchApiHelper.getGQLHeaders(applicationContext, true)[C.HEADER_TOKEN].isNullOrBlank() ||
                             !TwitchApiHelper.getHelixHeaders(applicationContext)[C.HEADER_TOKEN].isNullOrBlank())
             if (isLoggedIn) {
-                loadUserEmotes(channelId)
+                chatAssetLoader.loadUserEmotes(viewModelScope, channelId)
             }
         }
     }
@@ -213,7 +231,7 @@ class ChatViewModel @Inject constructor(
             messageLimit = applicationContext.prefs().getInt(C.CHAT_LIMIT, 600)
             startReplayChat(videoId, startTime, chatUrl, getCurrentPosition, getCurrentSpeed, channelId, channelLogin)
             if (videoId != null) {
-                loadEmotes(channelId, channelLogin)
+                chatAssetLoader.loadEmotes(viewModelScope, channelId, channelLogin)
             }
         }
     }
@@ -231,6 +249,7 @@ class ChatViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        chatAssetLoader.clear()
         stopLiveChat()
         stopReplayChat()
         pollSecondsLeft.value = null
@@ -240,293 +259,12 @@ class ChatViewModel @Inject constructor(
         super.onCleared()
     }
 
-    private fun addEmotes(list: List<Emote>) {
-        allEmotes.addAll(list.filter { it !in allEmotes })
-    }
 
-    private fun loadEmotes(channelId: String?, channelLogin: String?) {
-        val networkLibrary = applicationContext.prefs().getString(C.NETWORK_LIBRARY, "OkHttp")
-        val helixHeaders = TwitchApiHelper.getHelixHeaders(applicationContext)
-        val gqlHeaders = TwitchApiHelper.getGQLHeaders(applicationContext, true)
-        val emoteQuality = applicationContext.prefs().getString(C.CHAT_IMAGE_QUALITY, "4") ?: "4"
-        val animateGifs = applicationContext.prefs().getBoolean(C.ANIMATED_EMOTES, true)
-        val useWebp = applicationContext.prefs().getBoolean(C.CHAT_USE_WEBP, true)
-        val enableIntegrity = applicationContext.prefs().getBoolean(C.ENABLE_INTEGRITY, false)
-        emoteCache.globalBadges.value.also { saved ->
-            if (!saved.isNullOrEmpty()) {
-                _globalBadges.value = saved
-                if (!reloadMessages.value) {
-                    reloadMessages.value = true
-                }
-            } else {
-                viewModelScope.launch {
-                    try {
-                        playerRepository.loadGlobalBadges(networkLibrary, helixHeaders, gqlHeaders, emoteQuality, enableIntegrity).let { badges ->
-                            if (badges.isNotEmpty()) {
-                                emoteCache.setGlobalBadges(badges)
-                                _globalBadges.value = badges
-                                if (!reloadMessages.value) {
-                                    reloadMessages.value = true
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load global badges", e)
-                        if (e.message == "failed integrity check" && integrity.value == null) {
-                            integrity.value = "refresh"
-                        }
-                    }
-                }
-            }
-        }
-        if (applicationContext.prefs().getBoolean(C.CHAT_ENABLE_STV, true)) {
-            emoteCache.globalStvEmotes.value.also { saved ->
-                if (!saved.isNullOrEmpty()) {
-                    addEmotes(saved)
-                    _globalStvEmotes.value = saved
-                    if (!reloadMessages.value) {
-                        reloadMessages.value = true
-                    }
-                } else {
-                    viewModelScope.launch {
-                        try {
-                            playerRepository.loadGlobalStvEmotes(networkLibrary, useWebp).let { emotes ->
-                                if (emotes.isNotEmpty()) {
-                                    emoteCache.setGlobalStvEmotes(emotes)
-                                    addEmotes(emotes)
-                                    _globalStvEmotes.value = emotes
-                                    if (!reloadMessages.value) {
-                                        reloadMessages.value = true
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to load global 7tv emotes", e)
-                        }
-                    }
-                }
-            }
-            if (!channelId.isNullOrBlank()) {
-                viewModelScope.launch {
-                    try {
-                        playerRepository.loadStvEmotes(networkLibrary, channelId, useWebp).let {
-                            if (it.second.isNotEmpty()) {
-                                channelStvEmoteSetId = it.first
-                                addEmotes(it.second)
-                                _channelStvEmotes.value = it.second
-                                if (!reloadMessages.value) {
-                                    reloadMessages.value = true
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load 7tv emotes for channel $channelId", e)
-                    }
-                }
-            }
-        }
-        if (applicationContext.prefs().getBoolean(C.CHAT_ENABLE_BTTV, true)) {
-            emoteCache.globalBttvEmotes.value.also { saved ->
-                if (!saved.isNullOrEmpty()) {
-                    addEmotes(saved)
-                    _globalBttvEmotes.value = saved
-                    if (!reloadMessages.value) {
-                        reloadMessages.value = true
-                    }
-                } else {
-                    viewModelScope.launch {
-                        try {
-                            playerRepository.loadGlobalBttvEmotes(networkLibrary, useWebp).let { emotes ->
-                                if (emotes.isNotEmpty()) {
-                                    emoteCache.setGlobalBttvEmotes(emotes)
-                                    addEmotes(emotes)
-                                    _globalBttvEmotes.value = emotes
-                                    if (!reloadMessages.value) {
-                                        reloadMessages.value = true
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to load global BTTV emotes", e)
-                        }
-                    }
-                }
-            }
-            if (!channelId.isNullOrBlank()) {
-                viewModelScope.launch {
-                    try {
-                        playerRepository.loadBttvEmotes(networkLibrary, channelId, useWebp).let {
-                            if (it.isNotEmpty()) {
-                                addEmotes(it)
-                                _channelBttvEmotes.value = it
-                                if (!reloadMessages.value) {
-                                    reloadMessages.value = true
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load BTTV emotes for channel $channelId", e)
-                    }
-                }
-            }
-        }
-        if (applicationContext.prefs().getBoolean(C.CHAT_ENABLE_FFZ, true)) {
-            emoteCache.globalFfzEmotes.value.also { saved ->
-                if (!saved.isNullOrEmpty()) {
-                    addEmotes(saved)
-                    _globalFfzEmotes.value = saved
-                    if (!reloadMessages.value) {
-                        reloadMessages.value = true
-                    }
-                } else {
-                    viewModelScope.launch {
-                        try {
-                            playerRepository.loadGlobalFfzEmotes(networkLibrary, useWebp).let { emotes ->
-                                if (emotes.isNotEmpty()) {
-                                    emoteCache.setGlobalFfzEmotes(emotes)
-                                    addEmotes(emotes)
-                                    _globalFfzEmotes.value = emotes
-                                    if (!reloadMessages.value) {
-                                        reloadMessages.value = true
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to load global FFZ emotes", e)
-                        }
-                    }
-                }
-            }
-            if (!channelId.isNullOrBlank()) {
-                viewModelScope.launch {
-                    try {
-                        playerRepository.loadFfzEmotes(networkLibrary, channelId, useWebp).let {
-                            if (it.isNotEmpty()) {
-                                addEmotes(it)
-                                _channelFfzEmotes.value = it
-                                if (!reloadMessages.value) {
-                                    reloadMessages.value = true
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load FFZ emotes for channel $channelId", e)
-                    }
-                }
-            }
-        }
-        if (!channelId.isNullOrBlank() || !channelLogin.isNullOrBlank()) {
-            viewModelScope.launch {
-                try {
-                    playerRepository.loadChannelBadges(networkLibrary, helixHeaders, gqlHeaders, channelId, channelLogin, emoteQuality, enableIntegrity).let {
-                        if (it.isNotEmpty()) {
-                            _channelBadges.value = it
-                            if (!reloadMessages.value) {
-                                reloadMessages.value = true
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to load badges for channel $channelId", e)
-                    if (e.message == "failed integrity check" && integrity.value == null) {
-                        integrity.value = "refresh"
-                    }
-                }
-            }
-            viewModelScope.launch {
-                try {
-                    playerRepository.loadCheerEmotes(networkLibrary, helixHeaders, gqlHeaders, channelId, channelLogin, animateGifs, enableIntegrity).let {
-                        if (it.isNotEmpty()) {
-                            _cheerEmotes.value = it
-                            if (!reloadMessages.value) {
-                                reloadMessages.value = true
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to load cheermotes for channel $channelId", e)
-                    if (e.message == "failed integrity check" && integrity.value == null) {
-                        integrity.value = "refresh"
-                    }
-                }
-            }
-        }
-    }
 
-    private fun loadUserEmotes(channelId: String?) {
-        emoteCache.userEmotes.value.also { saved ->
-            if (!saved.isNullOrEmpty()) {
-                addEmotes(
-                    saved.map {
-                        Emote(
-                            name = it.name,
-                            url1x = it.url1x,
-                            url2x = it.url2x,
-                            url3x = it.url3x,
-                            url4x = it.url4x,
-                            format = it.format
-                        )
-                    }
-                )
-                _userEmotes.value = saved.sortedByDescending { it.ownerId == channelId }.map {
-                    Emote(
-                        name = it.name,
-                        url1x = it.url1x,
-                        url2x = it.url2x,
-                        url3x = it.url3x,
-                        url4x = it.url4x,
-                        format = it.format
-                    )
-                }
-            } else {
-                val helixHeaders = TwitchApiHelper.getHelixHeaders(applicationContext)
-                val gqlHeaders = TwitchApiHelper.getGQLHeaders(applicationContext, true)
-                if (!gqlHeaders[C.HEADER_TOKEN].isNullOrBlank() || !helixHeaders[C.HEADER_TOKEN].isNullOrBlank()) {
-                    viewModelScope.launch {
-                        try {
-                            val networkLibrary = applicationContext.prefs().getString(C.NETWORK_LIBRARY, "OkHttp")
-                            val accountId = applicationContext.tokenPrefs().getString(C.USER_ID, null)
-                            val animateGifs =  applicationContext.prefs().getBoolean(C.ANIMATED_EMOTES, true)
-                            val enableIntegrity = applicationContext.prefs().getBoolean(C.ENABLE_INTEGRITY, false)
-                            playerRepository.loadUserEmotes(networkLibrary, helixHeaders, gqlHeaders, channelId, accountId, animateGifs, enableIntegrity).let { emotes ->
-                                if (emotes.isNotEmpty()) {
-                                    val sorted = emotes.sortedByDescending { it.setId }
-                                    addEmotes(
-                                        sorted.map {
-                                            Emote(
-                                                name = it.name,
-                                                url1x = it.url1x,
-                                                url2x = it.url2x,
-                                                url3x = it.url3x,
-                                                url4x = it.url4x,
-                                                format = it.format
-                                            )
-                                        }
-                                    )
-                                    _userEmotes.value = sorted.sortedByDescending { it.ownerId == channelId }.map {
-                                        Emote(
-                                            name = it.name,
-                                            url1x = it.url1x,
-                                            url2x = it.url2x,
-                                            url3x = it.url3x,
-                                            url4x = it.url4x,
-                                            format = it.format
-                                        )
-                                    }
-                                    loadedUserEmotes = true
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to load user emotes", e)
-                            if (e.message == "failed integrity check" && integrity.value == null) {
-                                integrity.value = "refresh"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+
+
+
+
 
     fun loadRecentEmotes() {
         viewModelScope.launch {
@@ -548,11 +286,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun reloadEmotes(channelId: String?, channelLogin: String?) {
-        emoteCache.setGlobalBadges(null)
-        emoteCache.setGlobalStvEmotes(null)
-        emoteCache.setGlobalBttvEmotes(null)
-        emoteCache.setGlobalFfzEmotes(null)
-        loadEmotes(channelId, channelLogin)
+        chatAssetLoader.reloadEmotes(viewModelScope, channelId, channelLogin)
     }
 
     fun loadRecentMessages(networkLibrary: String?, channelLogin: String) {
@@ -1086,18 +820,8 @@ class ChatViewModel @Inject constructor(
                 }
             }
             val onEmoteSet: (String, List<Emote>, List<Emote>, List<Pair<Emote, Emote>>) -> Unit = { setId, added, removed, updated ->
-                if (setId == channelStvEmoteSetId) {
-                    if (stvLiveUpdates) {
-                        val removedEmotes = (removed + updated.map { it.first }).map { it.name }
-                        val newEmotes = added + updated.map { it.second }
-                        allEmotes.removeAll { it.name in removedEmotes }
-                        allEmotes.addAll(newEmotes.filter { it !in allEmotes })
-                        val existingSet = channelStvEmotes.value?.filter { it.name !in removedEmotes } ?: emptyList()
-                        _channelStvEmotes.value = existingSet + newEmotes
-                        if (!reloadMessages.value) {
-                            reloadMessages.value = true
-                        }
-                    }
+                if (setId == chatAssetLoader.channelStvEmoteSetId) {
+                    chatAssetLoader.updateStvEmoteSet(setId, added, removed, updated, stvLiveUpdates)
                 } else {
                     if (showPersonalEmotes) {
                         val removedEmotes = (removed + updated.map { it.first }).map { it.name }
@@ -1353,9 +1077,7 @@ class ChatViewModel @Inject constructor(
         val emoteSets = ChatUtils.parseEmoteSets(message)
         if (emoteSets != null && emoteCache.emoteSets.value != emoteSets) {
             emoteCache.setEmoteSets(emoteSets)
-            if (!loadedUserEmotes) {
-                loadEmoteSets(channelId)
-            }
+            chatAssetLoader.loadEmoteSets(viewModelScope, channelId)
         }
     }
 
@@ -1429,49 +1151,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    private fun loadEmoteSets(channelId: String?) {
-        val helixHeaders = TwitchApiHelper.getHelixHeaders(applicationContext)
-        if (!emoteCache.emoteSets.value.isNullOrEmpty() && !helixHeaders[C.HEADER_CLIENT_ID].isNullOrBlank() && !helixHeaders[C.HEADER_TOKEN].isNullOrBlank()) {
-            viewModelScope.launch {
-                try {
-                    val networkLibrary = applicationContext.prefs().getString(C.NETWORK_LIBRARY, "OkHttp")
-                    val animateGifs =  applicationContext.prefs().getBoolean(C.ANIMATED_EMOTES, true)
-                    val emotes = mutableListOf<TwitchEmote>()
-                    emoteCache.emoteSets.value?.chunked(25)?.forEach { list ->
-                        playerRepository.loadEmotesFromSet(networkLibrary, helixHeaders, list, animateGifs).let { emotes.addAll(it) }
-                    }
-                    if (emotes.isNotEmpty()) {
-                        val sorted = emotes.sortedByDescending { it.setId }
-                        emoteCache.setUserEmotes(sorted)
-                        addEmotes(
-                            sorted.map {
-                                Emote(
-                                    name = it.name,
-                                    url1x = it.url1x,
-                                    url2x = it.url2x,
-                                    url3x = it.url3x,
-                                    url4x = it.url4x,
-                                    format = it.format
-                                )
-                            }
-                        )
-                        _userEmotes.value = sorted.sortedByDescending { it.ownerId == channelId }.map {
-                            Emote(
-                                name = it.name,
-                                url1x = it.url1x,
-                                url2x = it.url2x,
-                                url3x = it.url3x,
-                                url4x = it.url4x,
-                                format = it.format
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to load emote sets", e)
-                }
-            }
-        }
-    }
+
 
     fun startPollTimeout(hide: () -> Unit) {
         pollTimeoutJob?.cancel()
@@ -2640,12 +2320,10 @@ class ChatViewModel @Inject constructor(
                     }
                 }
                 _localTwitchEmotes.value = twitchEmotes
-                _channelBadges.value = twitchBadges
-                _cheerEmotes.value = cheerEmotesList
-                _channelStvEmotes.value = emotes
+                chatAssetLoader.setReplayAssets(twitchEmotes, twitchBadges, cheerEmotesList, emotes)
                 if (emotes.isEmpty()) {
                     viewModelScope.launch {
-                        loadEmotes(channelId, channelLogin)
+                        chatAssetLoader.loadEmotes(viewModelScope, channelId, channelLogin)
                     }
                 }
                 if (messages.isNotEmpty()) {
