@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import com.github.andreyasadchy.xtra.R
+import com.google.android.material.color.MaterialColors
 import kotlin.math.max
 
 /**
@@ -33,24 +34,24 @@ class DailyBarChartView @JvmOverloads constructor(
 
     // Paints
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF58A6FF.toInt()  // Nice blue color
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLUE)
         style = Paint.Style.FILL
     }
 
     private val gridLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF3D3D3D.toInt()
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOutlineVariant, Color.GRAY)
         strokeWidth = 1f
         style = Paint.Style.STROKE
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF9E9E9E.toInt()
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY)
         textSize = 32f
         textAlign = Paint.Align.CENTER
     }
 
     private val gridLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF6E6E6E.toInt()
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
         textSize = 28f
         textAlign = Paint.Align.RIGHT
     }

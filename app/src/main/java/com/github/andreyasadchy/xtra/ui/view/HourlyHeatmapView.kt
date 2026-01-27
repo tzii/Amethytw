@@ -6,38 +6,42 @@
  import android.graphics.Paint
  import android.graphics.RectF
  import android.util.AttributeSet
- import android.view.View
- 
- /**
-  * Custom heatmap view for displaying peak viewing times by hour.
-  */
- class HourlyHeatmapView @JvmOverloads constructor(
-     context: Context,
-     attrs: AttributeSet? = null,
-     defStyleAttr: Int = 0
- ) : View(context, attrs, defStyleAttr) {
- 
-     private val cellPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-         style = Paint.Style.FILL
-     }
- 
-     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-         color = Color.parseColor("#9E9E9E")
-         textSize = 24f
-         textAlign = Paint.Align.CENTER
-     }
- 
-     private val rect = RectF()
-     
-     // 24 hours data (0-23), value is normalized 0-1
-     private var hourlyData: List<Float> = List(24) { 0f }
- 
-     companion object {
-         private val LOW_COLOR = Color.parseColor("#1E3A5F")
-         private val HIGH_COLOR = Color.parseColor("#58A6FF")
-     }
- 
-     fun setData(data: List<Pair<Int, Long>>) {
+import android.view.View
+import com.google.android.material.color.MaterialColors
+
+/**
+ * Custom heatmap view for displaying peak viewing times by hour.
+ */
+class HourlyHeatmapView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
+
+    private val cellPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY)
+        textSize = 24f
+        textAlign = Paint.Align.CENTER
+    }
+
+    private val rect = RectF()
+    
+    // 24 hours data (0-23), value is normalized 0-1
+    private var hourlyData: List<Float> = List(24) { 0f }
+
+    private val lowColor: Int
+    private val highColor: Int
+
+    init {
+        lowColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurfaceContainerHighest, Color.parseColor("#1E3A5F"))
+        highColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.parseColor("#58A6FF"))
+    }
+
+    fun setData(data: List<Pair<Int, Long>>) {
          val maxValue = data.maxOfOrNull { it.second }?.toFloat() ?: 1f
          if (maxValue == 0f) {
              hourlyData = List(24) { 0f }
@@ -68,9 +72,9 @@
              val top = padding
              rect.set(left + 1, top, left + cellWidth - 1, top + cellHeight)
              
-             cellPaint.color = interpolateColor(LOW_COLOR, HIGH_COLOR, value)
-             canvas.drawRoundRect(rect, 4f, 4f, cellPaint)
-         }
+            cellPaint.color = interpolateColor(lowColor, highColor, value)
+            canvas.drawRoundRect(rect, 4f, 4f, cellPaint)
+        }
  
          // Draw labels for every 6 hours
          listOf(0, 6, 12, 18).forEach { hour ->

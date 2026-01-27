@@ -5,33 +5,34 @@
  import android.graphics.Color
  import android.graphics.Paint
  import android.graphics.RectF
- import android.util.AttributeSet
- import android.view.View
- 
- /**
-  * Custom pie chart view for displaying category watch time breakdown.
-  */
- class CategoryPieChartView @JvmOverloads constructor(
-     context: Context,
-     attrs: AttributeSet? = null,
-     defStyleAttr: Int = 0
- ) : View(context, attrs, defStyleAttr) {
- 
-     data class Slice(
-         val label: String,
-         val value: Float,
-         val color: Int
-     )
- 
-     private val slicePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-         style = Paint.Style.FILL
-     }
- 
-     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-         color = Color.WHITE
-         textSize = 32f
-         textAlign = Paint.Align.CENTER
-     }
+import android.util.AttributeSet
+import android.view.View
+import com.google.android.material.color.MaterialColors
+
+/**
+ * Custom pie chart view for displaying category watch time breakdown.
+ */
+class CategoryPieChartView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
+
+    data class Slice(
+        val label: String,
+        val value: Float,
+        val color: Int
+    )
+
+    private val slicePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+        textSize = 32f
+        textAlign = Paint.Align.CENTER
+    }
  
      private val rect = RectF()
      private var slices: List<Slice> = emptyList()

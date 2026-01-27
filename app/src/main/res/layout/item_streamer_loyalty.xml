@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="#1E1E1E"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
     app:cardCornerRadius="12dp"
     app:cardElevation="0dp"
     app:strokeWidth="0dp">
@@ -21,7 +21,7 @@
             android:id="@+id/rankText"
             android:layout_width="36dp"
             android:layout_height="wrap_content"
-            android:textColor="#58A6FF"
+            android:textColor="?attr/colorPrimary"
             android:textSize="16sp"
             android:textStyle="bold"
             tools:text="#1" />
@@ -36,7 +36,7 @@
                 android:id="@+id/channelName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:ellipsize="end"
                 android:maxLines="1"
@@ -52,7 +52,7 @@
                     android:id="@+id/watchTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#9E9E9E"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="12h 30m" />
 
@@ -61,14 +61,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="8dp"
                     android:text="•"
-                    android:textColor="#9E9E9E"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/sessionCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#9E9E9E"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="45 sessions" />
             </LinearLayout>
@@ -84,7 +84,7 @@
                 android:id="@+id/loyaltyScore"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#7EE787"
+                android:textColor="?attr/colorTertiary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 tools:text="85" />
@@ -95,8 +95,8 @@
                 android:layout_width="60dp"
                 android:layout_height="4dp"
                 android:max="100"
-                android:progressTint="#7EE787"
-                android:progressBackgroundTint="#3D3D3D"
+                android:progressTint="?attr/colorTertiary"
+                android:progressBackgroundTint="?attr/colorSurfaceContainerHighest"
                 tools:progress="85" />
         </LinearLayout>
     </LinearLayout>

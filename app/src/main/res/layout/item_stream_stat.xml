@@ -11,6 +11,7 @@
         android:id="@+id/rank"
         android:layout_width="32dp"
         android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         tools:text="1"/>
 
@@ -19,6 +20,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         tools:text="Channel Name"/>
 
@@ -26,6 +28,7 @@
         android:id="@+id/watchTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnSurfaceVariant"
         tools:text="10h 25m"/>
 
 </LinearLayout>

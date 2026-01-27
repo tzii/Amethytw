@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#1E1E1E"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -34,7 +34,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Time watched"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -44,7 +44,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:textColor="#E0E0E0"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="18sp"
                     tools:text="3 hr 37 min daily average" />
 
@@ -54,7 +54,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="#9E9E9E"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="14sp"
                     tools:text="↑ 49% from last week" />
 
@@ -64,16 +64,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
                     android:layout_marginTop="16dp"
-                    app:barColor="#58A6FF"
-                    app:gridLineColor="#3D3D3D"
-                    app:labelColor="#9E9E9E" />
+                    app:barColor="?attr/colorPrimary"
+                    app:gridLineColor="?attr/colorOutlineVariant"
+                    app:labelColor="?attr/colorOnSurfaceVariant" />
 
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="16dp"
-                    android:background="#2D2D2D" />
+                    android:background="?attr/colorOutlineVariant" />
 
                 <!-- Today Stats Row -->
                 <LinearLayout
@@ -87,14 +87,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Today"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/todayTimeText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#9E9E9E"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="16sp"
                         tools:text="18 min" />
                 </LinearLayout>
@@ -111,14 +111,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Last 7 days"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/weekTotalText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#9E9E9E"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="16sp"
                         tools:text="25 hr 16 min" />
                 </LinearLayout>
@@ -132,7 +132,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#1E1E1E"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -153,14 +153,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Current Streak"
-                        android:textColor="#9E9E9E"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/currentStreakText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#7EE787"
+                        android:textColor="?attr/colorTertiary"
                         android:textSize="24sp"
                         android:textStyle="bold"
                         tools:text="5 days" />
@@ -176,14 +176,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Longest Streak"
-                        android:textColor="#9E9E9E"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/longestStreakText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#D2A8FF"
+                        android:textColor="?attr/colorSecondary"
                         android:textSize="24sp"
                         android:textStyle="bold"
                         tools:text="12 days" />
@@ -196,7 +196,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#1E1E1E"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -211,7 +211,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Categories Watched"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -236,7 +236,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#1E1E1E"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
@@ -251,7 +251,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Peak Viewing Times"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -260,7 +260,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Last 30 days"
-                    android:textColor="#9E9E9E"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="14sp" />
 
                 <com.github.andreyasadchy.xtra.ui.view.HourlyHeatmapView
@@ -277,7 +277,7 @@
             android:layout_height="wrap_content"
             android:text="Streamer Loyalty"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="8dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -294,7 +294,7 @@
             android:layout_height="wrap_content"
             android:text="Top Watched Channels"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="8dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
