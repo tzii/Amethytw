@@ -71,7 +71,9 @@ class PlayerGestureListener(
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         // Block all gestures when touch started in edge zone (system gesture area)
-        if (e1 == null || callback.isPortrait || !callback.isMaximized || callback.isControlsVisible || callback.isEdgeSwipe) return false
+        // Note: We don't check isControlsVisible here because scroll gestures should work
+        // even if controls become visible during the gesture. Tap gestures handle control visibility.
+        if (e1 == null || callback.isPortrait || !callback.isMaximized || callback.isEdgeSwipe) return false
         
         val width = callback.screenWidth.toFloat()
         val height = callback.screenHeight.toFloat()
@@ -114,7 +116,10 @@ class PlayerGestureListener(
         val text = feedback.findViewById<TextView>(R.id.feedbackText)
 
         if (isBrightness) {
-            val newBrightness = (startBrightness + percentY).coerceIn(0.01f, 1.0f)
+            val rawBrightness = startBrightness + percentY
+            val isAuto = rawBrightness < 0.05f
+            val newBrightness = if (isAuto) -1f else rawBrightness.coerceIn(0.05f, 1.0f)
+            
             val lp = callback.windowAttributes
             lp.screenBrightness = newBrightness
             callback.setWindowAttributes(lp)
@@ -124,8 +129,13 @@ class PlayerGestureListener(
             feedback.removeCallbacks(callback.getHideGestureRunnable())
             feedback.postDelayed(callback.getHideGestureRunnable(), 800)
             
-            progress.progress = (newBrightness * 100).toInt()
-            text.text = "%d%%".format((newBrightness * 100).toInt())
+            if (isAuto) {
+                progress.progress = 0
+                text.text = "Auto"
+            } else {
+                progress.progress = (newBrightness * 100).toInt()
+                text.text = "%d%%".format((newBrightness * 100).toInt())
+            }
             return true
         }
         

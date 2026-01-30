@@ -147,6 +147,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     private var controllerAnimation: ViewPropertyAnimator? = null
     private var backgroundColor: Int? = null
     private var backgroundVisible = false
+    private var originalBrightness: Float = -1f  // -1 = system default (auto)
 
     // Floating Chat Properties
     private var isFloatingChatEnabled = false
@@ -2049,7 +2050,12 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         with(binding) {
+            val wasPortrait = isPortrait
             isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
+            // Restore brightness when switching to portrait
+            if (isPortrait && !wasPortrait) {
+                restoreBrightness()
+            }
             if (isMaximized) {
                 enableBackground()
             } else {
@@ -2133,6 +2139,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     fun minimize() {
         with(binding) {
             isMaximized = false
+            // Restore original brightness when minimizing
+            restoreBrightness()
             // Hide floating chat when minimizing - it should only appear in fullscreen
             if (isFloatingChatEnabled) {
                 floatingChatRoot.gone()
@@ -2536,6 +2544,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     }
 
     override fun onDestroyView() {
+        // Restore original brightness when fragment is destroyed
+        restoreBrightness()
         super.onDestroyView()
         _binding = null
     }
@@ -2881,10 +2891,25 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     override val screenWidth get() = resources.displayMetrics.widthPixels
     override val screenHeight get() = resources.displayMetrics.heightPixels
     override val windowAttributes: android.view.WindowManager.LayoutParams get() = requireActivity().window.attributes
-    override fun setWindowAttributes(params: android.view.WindowManager.LayoutParams) { requireActivity().window.attributes = params }
+    override fun setWindowAttributes(params: android.view.WindowManager.LayoutParams) { 
+        // Save original brightness before first modification
+        if (originalBrightness == -1f && params.screenBrightness != -1f) {
+            originalBrightness = requireActivity().window.attributes.screenBrightness
+        }
+        requireActivity().window.attributes = params 
+    }
     override fun getGestureFeedbackView() = binding.playerLayout.findViewById<View>(R.id.gestureFeedback)
     override fun getHideGestureRunnable() = hideGestureRunnable
     override fun isControllerHideOnTouch() = controllerHideOnTouch
     override fun showController() = showController(false)
     override fun hideController() = hideController(false)
+    
+    private fun restoreBrightness() {
+        if (originalBrightness != -1f) {
+            val lp = requireActivity().window.attributes
+            lp.screenBrightness = originalBrightness
+            requireActivity().window.attributes = lp
+            originalBrightness = -1f
+        }
+    }
 }
