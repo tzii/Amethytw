@@ -148,6 +148,10 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     private var backgroundColor: Int? = null
     private var backgroundVisible = false
     private var originalBrightness: Float = -1f  // -1 = system default (auto)
+    
+    // Gesture conflict prevention: track state at gesture start
+    override var controlsVisibleAtGestureStart = false
+    private var isSwipeGestureInProgress = false
 
     // Floating Chat Properties
     private var isFloatingChatEnabled = false
@@ -329,6 +333,10 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                 moveAnimation?.cancel()
                 isTap = true
                 tapEventTime = event.eventTime
+                // Capture controls visibility at gesture start - this determines routing for entire gesture
+                controlsVisibleAtGestureStart = playerControls.root.isVisible
+                // Reset swipe gesture flag for new gesture
+                isSwipeGestureInProgress = false
                 if (isMaximized) {
                     if (playerControls.root.isVisible) {
                         playerControls.root.dispatchTouchEvent(event)
@@ -361,32 +369,45 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                         playerControls.root.dispatchTouchEvent(event)
                     } else {
                         if (slidingLayout.translationY in touchSlopRange) {
-                            if (playerControls.root.isVisible) {
+                            // Use controlsVisibleAtGestureStart for consistent routing
+                            if (controlsVisibleAtGestureStart) {
                                 playerControls.root.dispatchTouchEvent(event)
                             } else {
                                 controllerTapDetector.onTouchEvent(event)
                             }
                         }
-                        val minimizeThreshold = slidingLayout.height / 5
-                        if (slidingLayout.translationY < minimizeThreshold) {
-                            moveAnimation = slidingLayout.animate().apply {
-                                translationX(0f)
-                                translationY(0f)
-                                setDuration(250L)
-                                setListener(
-                                    object : AnimatorListenerAdapter() {
-                                        override fun onAnimationEnd(animation: Animator) {
-                                            setListener(null)
-                                            if (this@PlayerFragment.view != null && slidingLayout.translationY < touchSlop) {
-                                                enableBackground()
+                        // Only check minimize threshold if controls were visible and no swipe gesture claimed this touch
+                        if (controlsVisibleAtGestureStart && !isSwipeGestureInProgress) {
+                            val minimizeThreshold = slidingLayout.height / 5
+                            if (slidingLayout.translationY < minimizeThreshold) {
+                                moveAnimation = slidingLayout.animate().apply {
+                                    translationX(0f)
+                                    translationY(0f)
+                                    setDuration(250L)
+                                    setListener(
+                                        object : AnimatorListenerAdapter() {
+                                            override fun onAnimationEnd(animation: Animator) {
+                                                setListener(null)
+                                                if (this@PlayerFragment.view != null && slidingLayout.translationY < touchSlop) {
+                                                    enableBackground()
+                                                }
                                             }
                                         }
-                                    }
-                                )
-                                start()
+                                    )
+                                    start()
+                                }
+                            } else {
+                                minimize()
                             }
-                        } else {
-                            minimize()
+                        } else if (!controlsVisibleAtGestureStart) {
+                            // Controls were hidden at start - reset any accidental translation
+                            if (slidingLayout.translationY != 0f) {
+                                moveAnimation = slidingLayout.animate().apply {
+                                    translationY(0f)
+                                    setDuration(150L)
+                                    start()
+                                }
+                            }
                         }
                     }
                 } else {
@@ -499,10 +520,12 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                         }
                         MotionEvent.ACTION_MOVE -> {
                             if (isMaximized) {
-                                if (playerControls.root.isVisible) {
-                                    // Controls visible: dispatch to controls and handle minimize gesture
+                                // Use controlsVisibleAtGestureStart for consistent routing throughout the gesture
+                                if (controlsVisibleAtGestureStart) {
+                                    // Controls were visible at gesture start: dispatch to controls and handle minimize gesture
                                     playerControls.root.dispatchTouchEvent(event)
-                                    if (!playerControls.progressBar.isPressed && !statusBarSwipe && activePointerId != -1) {
+                                    // Skip minimize gesture if a swipe gesture (seek/volume/brightness/speed) claimed this gesture
+                                    if (!playerControls.progressBar.isPressed && !statusBarSwipe && activePointerId != -1 && !isSwipeGestureInProgress) {
                                         val pointerIndex = event.findPointerIndex(activePointerId)
                                         if (pointerIndex != -1) {
                                             val y = event.getY(pointerIndex)
@@ -526,7 +549,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                                         }
                                     }
                                 } else {
-                                    // Controls hidden: let gesture detector handle scroll gestures
+                                    // Controls were hidden at gesture start: let gesture detector handle scroll gestures
                                     controllerTapDetector.onTouchEvent(event)
                                 }
                             } else {
@@ -2903,6 +2926,14 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     override fun isControllerHideOnTouch() = controllerHideOnTouch
     override fun showController() = showController(false)
     override fun hideController() = hideController(false)
+    
+    override fun onSwipeGestureStarted() {
+        isSwipeGestureInProgress = true
+    }
+    
+    override fun onSwipeGestureEnded() {
+        isSwipeGestureInProgress = false
+    }
     
     private fun restoreBrightness() {
         if (originalBrightness != -1f) {

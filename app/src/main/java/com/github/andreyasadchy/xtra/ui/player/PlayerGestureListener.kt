@@ -17,6 +17,7 @@ interface PlayerGestureCallback {
     val isPortrait: Boolean
     val isMaximized: Boolean
     val isControlsVisible: Boolean
+    val controlsVisibleAtGestureStart: Boolean
     val screenWidth: Int
     val screenHeight: Int
     val windowAttributes: android.view.WindowManager.LayoutParams
@@ -38,6 +39,10 @@ interface PlayerGestureCallback {
     fun seek(position: Long)
     fun setPlaybackSpeed(speed: Float)
     fun getCurrentSpeed(): Float?
+    
+    // Notify when gesture detector has claimed a swipe gesture
+    fun onSwipeGestureStarted()
+    fun onSwipeGestureEnded()
 }
 
 class PlayerGestureListener(
@@ -51,6 +56,7 @@ class PlayerGestureListener(
     private var isBrightness = false
     private var isSeek = false
     private var isSpeed = false
+    private var hasNotifiedGestureStart = false
     private var startVolume = 0
     private var startBrightness = 0f
     private var startPosition = 0L
@@ -60,6 +66,11 @@ class PlayerGestureListener(
     private var duration = 0L
 
     override fun onDown(e: MotionEvent): Boolean {
+        // End any previous gesture
+        if (hasNotifiedGestureStart) {
+            callback.onSwipeGestureEnded()
+            hasNotifiedGestureStart = false
+        }
         isVolume = false
         isBrightness = false
         isSeek = false
@@ -70,10 +81,10 @@ class PlayerGestureListener(
     }
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-        // Block all gestures when touch started in edge zone (system gesture area)
-        // Note: We don't check isControlsVisible here because scroll gestures should work
-        // even if controls become visible during the gesture. Tap gestures handle control visibility.
-        if (e1 == null || callback.isPortrait || !callback.isMaximized || callback.isEdgeSwipe) return false
+        // Block all gestures when:
+        // - touch started in edge zone (system gesture area)
+        // - controls were visible when gesture started (use controlsVisibleAtGestureStart to lock this for entire gesture)
+        if (e1 == null || callback.isPortrait || !callback.isMaximized || callback.isEdgeSwipe || callback.controlsVisibleAtGestureStart) return false
         
         val width = callback.screenWidth.toFloat()
         val height = callback.screenHeight.toFloat()
@@ -103,6 +114,13 @@ class PlayerGestureListener(
                          isSpeed = true
                          startSpeed = callback.getCurrentSpeed() ?: 1f
                      }
+                 }
+             }
+             // Notify that we've claimed this gesture (prevents minimize gesture from triggering)
+             if (isVolume || isBrightness || isSeek || isSpeed) {
+                 if (!hasNotifiedGestureStart) {
+                     callback.onSwipeGestureStarted()
+                     hasNotifiedGestureStart = true
                  }
              }
         }
