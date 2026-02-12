@@ -1665,6 +1665,8 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     }
 
     protected fun showController(force: Boolean = false) {
+        // Don't show controls while a swipe gesture (seek/volume/brightness/speed) is in progress
+        if (!force && isSwipeGestureInProgress) return
         if (!controllerIsAnimating) {
             if (!binding.playerControls.root.isVisible) {
                 binding.playerControls.root.removeCallbacks(controllerHideAction)
