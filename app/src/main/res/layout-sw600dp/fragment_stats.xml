@@ -10,9 +10,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="24dp">
 
-        <!-- Screen Time Overview Card - Full Width -->
+        <!-- Screen Time Overview Card - Full Width, Horizontal Layout -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/screenTimeCard"
             android:layout_width="0dp"
@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <!-- Header with icon -->
                 <LinearLayout
@@ -55,100 +55,110 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Daily Average -->
-                <TextView
-                    android:id="@+id/dailyAverageText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    tools:text="3h 37m" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/daily_average"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="14sp" />
-
-                <!-- Week Change -->
-                <TextView
-                    android:id="@+id/weekChangeText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textColor="?attr/colorPrimary"
-                    android:textSize="14sp"
-                    tools:text="↑ 49% from last week" />
-
-                <!-- Bar Chart -->
-                <com.github.andreyasadchy.xtra.ui.view.DailyBarChartView
-                    android:id="@+id/dailyBarChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="20dp" />
-
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="20dp"
-                    android:background="?attr/colorOutlineVariant" />
-
-                <!-- Stats Row -->
+                <!-- Stats and Chart Side by Side -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <!-- Left: Stats -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
+                        <!-- Daily Average -->
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/today"
-                            android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/todayTimeText"
+                            android:id="@+id/dailyAverageText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/colorOnSurface"
-                            android:textSize="18sp"
+                            android:textSize="36sp"
                             android:textStyle="bold"
-                            tools:text="18 min" />
+                            tools:text="3h 37m" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/daily_average"
+                            android:textColor="?android:textColorSecondary"
+                            android:textSize="14sp" />
+
+                        <!-- Week Change -->
+                        <TextView
+                            android:id="@+id/weekChangeText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="14sp"
+                            tools:text="^ 49% from last week" />
+
+                        <!-- Stats Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/today"
+                                    android:textColor="?android:textColorSecondary"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/todayTimeText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    tools:text="18 min" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/last_7_days"
+                                    android:textColor="?android:textColorSecondary"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/weekTotalText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    tools:text="25h 16m" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
 
-                    <LinearLayout
+                    <!-- Right: Bar Chart -->
+                    <com.github.andreyasadchy.xtra.ui.view.DailyBarChartView
+                        android:id="@+id/dailyBarChart"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/last_7_days"
-                            android:textColor="?android:textColorSecondary"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/weekTotalText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            tools:text="25h 16m" />
-                    </LinearLayout>
+                        android:layout_height="200dp"
+                        android:layout_weight="1.5"
+                        android:layout_marginStart="24dp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -173,7 +183,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <!-- Current Streak -->
                 <LinearLayout
@@ -184,8 +194,8 @@
                     android:gravity="center">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:src="@drawable/baseline_local_fire_department_24"
                         app:tint="#FF6B6B" />
 
@@ -195,7 +205,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="28sp"
+                        android:textSize="32sp"
                         android:textStyle="bold"
                         tools:text="5" />
 
@@ -204,7 +214,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/current_streak"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <!-- Divider -->
@@ -223,8 +233,8 @@
                     android:gravity="center">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:src="@drawable/baseline_emoji_events_24"
                         app:tint="#FFD93D" />
 
@@ -234,7 +244,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="28sp"
+                        android:textSize="32sp"
                         android:textStyle="bold"
                         tools:text="12" />
 
@@ -243,7 +253,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/longest_streak"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -262,13 +272,13 @@
             app:layout_constraintTop_toBottomOf="@id/screenTimeCard"
             app:layout_constraintStart_toEndOf="@id/streakCard"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1">
+            app:layout_constraintHorizontal_weight="2">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <!-- Header with icon -->
                 <LinearLayout
@@ -293,19 +303,29 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <com.github.andreyasadchy.xtra.ui.view.CategoryPieChartView
-                    android:id="@+id/categoryPieChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="16dp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/categoryLegendRecyclerView"
+                <!-- Pie Chart and Legend Side by Side -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:nestedScrollingEnabled="false"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <com.github.andreyasadchy.xtra.ui.view.CategoryPieChartView
+                        android:id="@+id/categoryPieChart"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_weight="1" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/categoryLegendRecyclerView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -327,7 +347,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <!-- Header with icon -->
                 <LinearLayout
@@ -368,7 +388,7 @@
                 <com.github.andreyasadchy.xtra.ui.view.HourlyHeatmapView
                     android:id="@+id/hourlyHeatmap"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="120dp"
                     android:layout_marginTop="16dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -387,7 +407,7 @@
             app:layout_constraintTop_toBottomOf="@id/peakTimesCard"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Streamer Loyalty RecyclerView - Grid with 2 columns -->
+        <!-- Streamer Loyalty RecyclerView - Grid with 3 columns -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/loyaltyRecyclerView"
             android:layout_width="0dp"
@@ -395,7 +415,7 @@
             android:layout_marginBottom="16dp"
             android:nestedScrollingEnabled="false"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="2"
+            app:spanCount="3"
             app:layout_constraintTop_toBottomOf="@id/loyaltyTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -413,14 +433,14 @@
             app:layout_constraintTop_toBottomOf="@id/loyaltyRecyclerView"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Top Watched RecyclerView - Grid with 2 columns -->
+        <!-- Top Watched RecyclerView - Grid with 3 columns -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/topStreamsRecyclerView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="2"
+            app:spanCount="3"
             app:layout_constraintTop_toBottomOf="@id/topStreamsTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

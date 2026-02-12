@@ -302,9 +302,31 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             val longPressTimeout = ViewConfiguration.getLongPressTimeout()
             val moveFreely = prefs.getBoolean(C.PLAYER_MOVE_FREELY, false)
             val doubleTap = prefs.getBoolean(C.PLAYER_DOUBLETAP, true) && !prefs.getBoolean(C.CHAT_DISABLE, false)
+            
+            // Gesture Settings
+            val gesturesEnabled = prefs.getBoolean(C.PLAYER_GESTURES_ENABLED, true)
+            val hapticEnabled = prefs.getBoolean(C.PLAYER_GESTURES_HAPTIC, false)
+            
+            val sensitivityPref = prefs.getString(C.PLAYER_GESTURES_SENSITIVITY, "1")?.toIntOrNull() ?: 1
+            val sensitivity = when (sensitivityPref) {
+                0 -> 0.5f // Low
+                2 -> 2.0f // High
+                else -> 1.0f // Medium (default)
+            }
+            
+            val zoneSplit = prefs.getString(C.PLAYER_GESTURES_ZONE_SPLIT, "0.5")?.toFloatOrNull() ?: 0.5f
+
             val controllerTapDetector = GestureDetector(
                 requireContext(),
-                PlayerGestureListener(requireContext(), this@PlayerFragment, doubleTap)
+                PlayerGestureListener(
+                    requireContext(), 
+                    this@PlayerFragment, 
+                    doubleTap,
+                    gesturesEnabled,
+                    hapticEnabled,
+                    sensitivity,
+                    zoneSplit
+                )
             )
 
             // Edge zone detection for system gesture areas

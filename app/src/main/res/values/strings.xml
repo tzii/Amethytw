@@ -771,4 +771,12 @@
     <string name="speed_increase" translatable="false">Increase speed</string>
     <string name="seek_forward" translatable="false">Fast Forward</string>
     <string name="seek_backward" translatable="false">Rewind</string>
+
+    <string name="player_gestures_category">Gestures</string>
+    <string name="player_gestures_enabled">Enable gestures</string>
+    <string name="player_gestures_enabled_summary">Control volume and brightness with gestures</string>
+    <string name="player_gestures_haptic">Haptic feedback</string>
+    <string name="player_gestures_haptic_summary">Vibrate when changing volume or brightness</string>
+    <string name="player_gestures_sensitivity">Sensitivity</string>
+    <string name="player_gestures_zone_split">Zone split</string>
 </resources>

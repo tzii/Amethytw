@@ -3,6 +3,7 @@ package com.github.andreyasadchy.xtra.ui.player
 import android.content.Context
 import android.media.AudioManager
 import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -48,16 +49,28 @@ interface PlayerGestureCallback {
 class PlayerGestureListener(
     private val context: Context,
     private val callback: PlayerGestureCallback,
-    private val doubleTapEnabled: Boolean
+    private val doubleTapEnabled: Boolean,
+    private val gesturesEnabled: Boolean = true,
+    private val hapticEnabled: Boolean = false,
+    private val sensitivity: Float = 1.0f, // Multiplier: 0.5f, 1.0f, 2.0f
+    private val zoneSplit: Float = 0.5f    // Top zone ratio: 0.4f, 0.5f, 0.6f
 ) : GestureDetector.SimpleOnGestureListener() {
 
     private val helper = PlayerGestureHelper(context)
+    
+    // State machine flags to track which gesture mode we are currently in
     private var isVolume = false
     private var isBrightness = false
     private var isSeek = false
     private var isSpeed = false
+    
+    // Flag to ensure we only notify the callback once per gesture
     private var hasNotifiedGestureStart = false
-    private var isScrolling = false  // Track if a scroll gesture is in progress
+    
+    // General flag to indicate any scroll gesture is active (prevents taps)
+    private var isScrolling = false 
+    
+    // Initial values captured at the start of the gesture (ACTION_DOWN)
     private var startVolume = 0
     private var startBrightness = 0f
     private var startPosition = 0L
@@ -67,33 +80,43 @@ class PlayerGestureListener(
     private var duration = 0L
 
     override fun onDown(e: MotionEvent): Boolean {
-        // End any previous gesture
+        // End any previous gesture cleanup if needed
         if (hasNotifiedGestureStart) {
             callback.onSwipeGestureEnded()
             hasNotifiedGestureStart = false
         }
+        
+        // Reset all state flags for the new gesture sequence
         isVolume = false
         isBrightness = false
         isSeek = false
         isSpeed = false
-        isScrolling = false  // Reset scrolling flag on new gesture
+        isScrolling = false
+        
+        // Capture start coordinates
         gestureStartY = e.y
         gestureStartX = e.x
         return true
     }
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        // Master toggle check
+        if (!gesturesEnabled) return false
+
         // Block all gestures when:
         // - touch started in edge zone (system gesture area)
         // - controls were visible when gesture started (use controlsVisibleAtGestureStart to lock this for entire gesture)
+        // - player is in portrait or minimized mode
         if (e1 == null || callback.isPortrait || !callback.isMaximized || callback.isEdgeSwipe || callback.controlsVisibleAtGestureStart) return false
         
         val width = callback.screenWidth.toFloat()
         val height = callback.screenHeight.toFloat()
         
+        // If we haven't locked onto a specific gesture type yet, determine it now
         if (!isVolume && !isBrightness && !isSeek && !isSpeed) {
              if (abs(distanceY) > abs(distanceX)) {
-                 // Vertical Swipes
+                 // Vertical Swipes (Volume / Brightness)
+                 // Split left/right halves
                  if (e1.x < width / 2) {
                      isBrightness = true
                      startBrightness = callback.windowAttributes.screenBrightness
@@ -104,25 +127,28 @@ class PlayerGestureListener(
                      startVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                  }
              } else {
-                 // Horizontal Swipes (VoD only)
+                 // Horizontal Swipes (VoD only: Seek / Speed)
                  if (callback.getPlayerVideoType() != PlayerFragment.STREAM) {
-                     if (e1.y < height / 2) {
-                         // Top 50% -> Seek
+                     // Split top/bottom using configured zone split ratio
+                     if (e1.y < height * zoneSplit) {
+                         // Top Zone -> Seek
                          isSeek = true
                          startPosition = callback.getCurrentPosition() ?: 0L
                          duration = callback.getDuration()
                      } else {
-                         // Bottom 50% -> Speed
+                         // Bottom Zone -> Speed
                          isSpeed = true
                          startSpeed = callback.getCurrentSpeed() ?: 1f
                      }
                  }
              }
+             
              // Notify that we've claimed this gesture (prevents minimize gesture from triggering)
              if (isVolume || isBrightness || isSeek || isSpeed) {
                  isScrolling = true  // Mark that we're in a scroll gesture
                  if (!hasNotifiedGestureStart) {
                      callback.onSwipeGestureStarted()
+                     performHapticFeedback() // Feedback on gesture start
                      hasNotifiedGestureStart = true
                  }
              }
@@ -178,8 +204,9 @@ class PlayerGestureListener(
 
         if (isSeek) {
             if (duration > 0) {
-                // Seek logic: 90 seconds per screen width swipe
-                val seekAmount = (percentX * 90000).toLong() 
+                // Seek logic: 90 seconds per screen width swipe, adjusted by sensitivity
+                val baseSeekSeconds = 90
+                val seekAmount = (percentX * baseSeekSeconds * 1000 * sensitivity).toLong()
                 val newPosition = (startPosition + seekAmount).coerceIn(0, duration)
                 callback.seek(newPosition)
 
@@ -199,8 +226,8 @@ class PlayerGestureListener(
 
         if (isSpeed) {
             // Speed logic: 0.05x increments
-            // Swipe full width = 1.0x change?
-            val speedChange = (percentX * 2.0f) // Sensitivity
+            // Swipe full width = 1.0x change, adjusted by sensitivity
+            val speedChange = (percentX * 2.0f * sensitivity)
             // Round to nearest 0.05
             var newSpeed = startSpeed + speedChange
             newSpeed = (Math.round(newSpeed * 20) / 20.0f).coerceIn(0.25f, 4.0f)
@@ -265,9 +292,22 @@ class PlayerGestureListener(
     override fun onDoubleTap(e: MotionEvent): Boolean {
         return if (doubleTapEnabled && !callback.isPortrait && callback.isMaximized) {
             callback.cycleChatMode()
+            performHapticFeedback() // Feedback for double tap action
             true
         } else {
             false
+        }
+    }
+
+    private fun performHapticFeedback() {
+        if (hapticEnabled) {
+            // Try to use the feedback view to perform haptic feedback
+            try {
+                val view = callback.getGestureFeedbackView()
+                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            } catch (e: Exception) {
+                // Ignore if view not available or haptics failed
+            }
         }
     }
 }

@@ -11,21 +11,23 @@ A fork of [Xtra](https://github.com/crackededed/Xtra) with additional features f
 ## Known Issues & TODO
 
 ### Gesture System (In Progress)
-The gesture system is functional but has some edge cases that need refinement:
+The gesture system is functional and customizable:
 
-- [ ] **Tap sensitivity after scroll**: Sometimes a tap immediately after a scroll gesture doesn't register
-- [ ] **Gesture zone boundaries**: The split between top/bottom zones for seek/speed could be more forgiving
-- [ ] **Minimize gesture conflicts**: While mostly fixed, there may still be edge cases where minimize interferes with other gestures
-- [ ] **Haptic feedback**: Add haptic feedback for gesture actions
-- [ ] **Settings integration**: Allow users to customize gesture sensitivity and zone sizes
+- [x] **Tap sensitivity after scroll**: Fixed (taps ignored immediately after scroll)
+- [x] **Gesture zone boundaries**: Configurable split between top/bottom zones
+- [x] **Minimize gesture conflicts**: Fixed (gestures blocked when controls visible)
+- [x] **Haptic feedback**: Added (optional, disabled by default)
+- [x] **Settings integration**: Customize sensitivity, zones, and haptics in Settings
+- [ ] **Edge cases**: Refine minimize behavior during active gestures
 
 ### Stats & Analytics
-- [ ] **Category breakdown**: Stats are now tracked but the UI doesn't show category breakdown yet
-- [ ] **Data visualization**: Add charts/graphs for watch time trends
+- [x] **Category breakdown**: Charts and legends implemented
+- [x] **Data visualization**: Bar charts, pie charts, and heatmaps added
 
 ### General
-- [ ] **Testing coverage**: Add more automated tests for gesture handling
-- [ ] **Documentation**: Document gesture system architecture for contributors
+- [x] **Testing coverage**: Added unit tests for gesture logic
+- [x] **Documentation**: Added [Gesture System Architecture](docs/GESTURE_SYSTEM.md)
+
 
 ## What's Different from Xtra?
 
